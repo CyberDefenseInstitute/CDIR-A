@@ -1,0 +1,13 @@
+SOFTWARE\Classes\Exefile\Shell\Open\Command\
+SOFTWARE\Microsoft\Command Processor\Autorun
+SOFTWARE\Microsoft\Windows NT\CurrentVersion\Terminal Server\Install\Software\Microsoft\Windows\CurrentVersion\Run
+SOFTWARE\Microsoft\Windows NT\CurrentVersion\Terminal Server\Install\Software\Microsoft\Windows\CurrentVersion\RunOnce
+SOFTWARE\Microsoft\Windows NT\CurrentVersion\Windows
+SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon\Shell
+SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer\Run
+SOFTWARE\Microsoft\Windows\CurrentVersion\Run
+SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce
+SOFTWARE\Microsoft\Windows\CurrentVersion\RunServices
+SOFTWARE\Microsoft\Windows\CurrentVersion\RunServicesOnce
+SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Policies\Explorer\Run
+SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Run

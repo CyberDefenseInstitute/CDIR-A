@@ -1,0 +1,6 @@
+Control\Lsa\Authentication Packages
+Control\Lsa\Notification Packages
+Control\Lsa\Security Packages
+Control\SecurityProviders\SecurityProviders
+Control\Session Manager\AppCertDlls
+Control\Session Manager\CWDIllegalInDllSearch
