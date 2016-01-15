@@ -325,36 +325,36 @@ WHERE
  TimeGenerated AS 日時,
  ComputerName AS コンピュータ名,
  EventLog AS ファイル名,
- EXTRACT_TOKEN(Strings,0,'|') AS 元SID,
+/* EXTRACT_TOKEN(Strings,0,'|') AS 元SID,
  EXTRACT_TOKEN(Strings,1,'|') AS 元ユーザ,
  EXTRACT_TOKEN(Strings,2,'|') AS 元ドメイン,
- EXTRACT_TOKEN(Strings,3,'|') AS 元ログオンID,
- EXTRACT_TOKEN(Strings,4,'|') AS 先SID,
- EXTRACT_TOKEN(Strings,5,'|') AS 先ユーザ,
- EXTRACT_TOKEN(Strings,6,'|') AS 先ドメイン,
- EXTRACT_TOKEN(Strings,7,'|') AS 先ログオンID,
+ EXTRACT_TOKEN(Strings,3,'|') AS 元ログオンID,*/
+ EXTRACT_TOKEN(Strings,4,'|') AS SID,
+ EXTRACT_TOKEN(Strings,5,'|') AS ユーザ,
+ EXTRACT_TOKEN(Strings,6,'|') AS ドメイン,
+ EXTRACT_TOKEN(Strings,7,'|') AS ログオンID,
  EXTRACT_TOKEN(Strings,9,'|') AS ログオンプロセス,
  EXTRACT_TOKEN(Strings,10,'|') AS 認証パッケージ,
  EXTRACT_TOKEN(Strings,11,'|') AS ワークステーション名,
  EXTRACT_TOKEN(Strings,12,'|') AS ログオンGUID,
  EXTRACT_TOKEN(Strings,16,'|') AS プロセスID,
  EXTRACT_TOKEN(Strings,17,'|') AS プロセス名,
- EXTRACT_TOKEN(Strings,18,'|') AS IPアドレス
+ EXTRACT_TOKEN(Strings,18,'|') AS ソースIP
 FROM
  '[LOGFILEPATH]'
 WHERE
  SourceName = 'Microsoft-Windows-Security-Auditing' AND
  EventID = 4624 AND
  EXTRACT_TOKEN(Strings,8,'|') = '3' AND
- 先ユーザ &lt;&gt; 'ANONYMOUS LOGON' AND
- IPアドレス &lt;&gt; '-' AND
- IPアドレス &lt;&gt; '::1'
+ ユーザ &lt;&gt; 'ANONYMOUS LOGON' AND
+ ソースIP &lt;&gt; '-' AND
+ ソースIP &lt;&gt; '::1'
 </QueryData>
     <QueryID>0588f1fd-386c-4c9b-b3e5-c53f7303792d</QueryID>
     <LogType>EVTLOG</LogType>
     <QueryCategory>EVT</QueryCategory>
     <IsFavorite>false</IsFavorite>
-    <DateModified>2016-01-05T10:50:24.6943865+09:00</DateModified>
+    <DateModified>2016-01-14T14:58:40.1109825+09:00</DateModified>
   </LPQuery>
   <LPQuery>
     <QueryName>【認証】ネットワークログオン(クリアテキスト)</QueryName>
@@ -394,21 +394,21 @@ WHERE
  TimeGenerated AS 日時,
  ComputerName AS コンピュータ名,
  EventLog AS ファイル名,
- EXTRACT_TOKEN(Strings,0,'|') AS 元SID,
+/* EXTRACT_TOKEN(Strings,0,'|') AS 元SID,
  EXTRACT_TOKEN(Strings,1,'|') AS 元ユーザ,
  EXTRACT_TOKEN(Strings,2,'|') AS 元ドメイン,
- EXTRACT_TOKEN(Strings,3,'|') AS 元ログオンID,
- EXTRACT_TOKEN(Strings,4,'|') AS 先SID,
- EXTRACT_TOKEN(Strings,5,'|') AS 先ユーザ,
- EXTRACT_TOKEN(Strings,6,'|') AS 先ドメイン,
- EXTRACT_TOKEN(Strings,7,'|') AS 先ログオンID,
+ EXTRACT_TOKEN(Strings,3,'|') AS 元ログオンID,*/
+ EXTRACT_TOKEN(Strings,4,'|') AS SID,
+ EXTRACT_TOKEN(Strings,5,'|') AS ユーザ,
+ EXTRACT_TOKEN(Strings,6,'|') AS ドメイン,
+ EXTRACT_TOKEN(Strings,7,'|') AS ログオンID,
  EXTRACT_TOKEN(Strings,9,'|') AS ログオンプロセス,
  EXTRACT_TOKEN(Strings,10,'|') AS 認証パッケージ,
  EXTRACT_TOKEN(Strings,11,'|') AS ワークステーション名,
  EXTRACT_TOKEN(Strings,12,'|') AS ログオンGUID,
  EXTRACT_TOKEN(Strings,16,'|') AS プロセスID,
  EXTRACT_TOKEN(Strings,17,'|') AS プロセス名,
- EXTRACT_TOKEN(Strings,18,'|') AS IPアドレス
+ EXTRACT_TOKEN(Strings,18,'|') AS ソースIP
 FROM
  '[LOGFILEPATH]'
 WHERE
@@ -420,7 +420,7 @@ WHERE
     <LogType>EVTLOG</LogType>
     <QueryCategory>ALL</QueryCategory>
     <IsFavorite>false</IsFavorite>
-    <DateModified>2016-01-05T10:51:52.1941513+09:00</DateModified>
+    <DateModified>2016-01-14T14:58:34.9502467+09:00</DateModified>
   </LPQuery>
   <LPQuery>
     <QueryName>【認証】ユーザ別ログオン回数</QueryName>
@@ -678,7 +678,7 @@ WHERE
   </LPQuery>
   <LPQuery>
     <QueryName>【認証】別アカウントのログオン</QueryName>
-    <QueryDescription>ソース Microsoft-Windows-Security-Auditing、イベントID 4648のレコードを抽出する。そのうちtaskhost, taskengを除外して表示する。
+    <QueryDescription>ソース Microsoft-Windows-Security-Auditing、イベントID 4648のレコードを抽出する。そのうちtaskhost, taskengとlocalhostに閉じたレコードを除外して表示する。
 
 設定でColumnのSortableを有効にしているとエラーになるため、外すかCSVで出力する必要がある。
 </QueryDescription>
@@ -686,31 +686,34 @@ WHERE
  TimeGenerated AS 日時,
  ComputerName AS コンピュータ名,
  EventLog AS ファイル名,
- EXTRACT_TOKEN(Strings,0,'|') AS 元SID,
- EXTRACT_TOKEN(Strings,1,'|') AS 元アカウント,
- EXTRACT_TOKEN(Strings,2,'|') AS 元ドメイン,
- EXTRACT_TOKEN(Strings,3,'|') AS 元ログオンID,
- EXTRACT_TOKEN(Strings,4,'|') AS 元ログオンGUID,
- EXTRACT_TOKEN(Strings,5,'|') AS 先アカウント,
- EXTRACT_TOKEN(Strings,6,'|') AS 先ドメイン,
- EXTRACT_TOKEN(Strings,7,'|') AS 先ログオンGUID,
- EXTRACT_TOKEN(Strings,8,'|') AS 先ターゲット,
+ EXTRACT_TOKEN(Strings,0,'|') AS 現SID,
+ EXTRACT_TOKEN(Strings,1,'|') AS 現アカウント,
+ EXTRACT_TOKEN(Strings,2,'|') AS 現ドメイン,
+ EXTRACT_TOKEN(Strings,3,'|') AS 現ログオンID,
+/* EXTRACT_TOKEN(Strings,4,'|') AS 現ログオンGUID,*/
+ EXTRACT_TOKEN(Strings,5,'|') AS 指定アカウント,
+ EXTRACT_TOKEN(Strings,6,'|') AS 指定ドメイン,
+ EXTRACT_TOKEN(Strings,7,'|') AS 指定ログオンGUID,
+ EXTRACT_TOKEN(Strings,8,'|') AS ターゲット,
  EXTRACT_TOKEN(Strings,10,'|') AS プロセスID,
  EXTRACT_TOKEN(Strings,11,'|') AS プロセス,
- EXTRACT_TOKEN(Strings,12,'|') AS アドレス
+ EXTRACT_TOKEN(Strings,12,'|') AS IPアドレス
 FROM
  '[LOGFILEPATH]'
 WHERE
  SourceName = 'Microsoft-Windows-Security-Auditing' AND
  EventID = 4648 AND
  プロセス &lt;&gt; 'C:\Windows\System32\taskhost.exe' AND 
- プロセス &lt;&gt; 'C:\Windows\System32\taskeng.exe' 
+ プロセス &lt;&gt; 'C:\Windows\System32\taskeng.exe' AND NOT
+ (ターゲット = 'localhost' AND IPアドレス = '-') AND NOT 
+ (ターゲット = 'localhost' AND IPアドレス = '127.0.0.1') AND NOT
+ (ターゲット = 'localhost' AND IPアドレス = '::1') 
 
 </QueryData>
     <QueryID>0aacc8cd-a53d-4b95-b026-63ffd2eb27a8</QueryID>
     <LogType>EVTLOG</LogType>
     <QueryCategory>EVT</QueryCategory>
     <IsFavorite>false</IsFavorite>
-    <DateModified>2016-01-05T11:29:29.9340418+09:00</DateModified>
+    <DateModified>2016-01-14T14:58:15.9047925+09:00</DateModified>
   </LPQuery>
 </ArrayOfLPQuery>

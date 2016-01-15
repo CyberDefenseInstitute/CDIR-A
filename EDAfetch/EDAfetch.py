@@ -87,9 +87,10 @@ def win7and8pf(fol1,pf,pfl00,fomv):
 			kl.remove('00')
 		mo = "".join(kl)
 		mo2 = binascii.a2b_hex(mo)
-		#print mo2
+		print mo2
 		if fname in mo2:
 			mo3.append(mo2)
+			print mo3[0]
 			
 		gs.append(mo2)
 		dllout.append(gs)
@@ -116,7 +117,15 @@ def win7and8pf(fol1,pf,pfl00,fomv):
 	list1.append(mdh5)
 	
 	#Exe File Path
-	list1.append(mo3)
+	print mo3
+	if not len(mo3) == 0:
+		mot = mo3[0]
+		list1.append(mot)
+	else:
+		list1.append("-")
+		
+	#expath = mo3[0]
+	#list1.append(mo3)
 		
 	#Execution Counter(Win7)
 	if fomv == "17":
@@ -198,15 +207,10 @@ def win7and8pf(fol1,pf,pfl00,fomv):
         list_csv.append(list1)
 		
 	retsu1 = ["Machine name","Prefetch file name","Hash","Exe File Path","Volume path","Number of executions","Date and time1","Date and time2","Date and time3","Date and time4","Date and time5","Date and time6","Date and time7","Date and time8"]
-	retsu3 = []
 	
 	with open(out+"prefetch_list.csv","w") as pfile:   #Open New File ( prefetch list file )
 		prfline = csv.writer((pfile),lineterminator = "\n")
-		for aa in retsu1:
-			retsu2 = []
-			retsu2.append(aa)
-			retsu3.append(retsu2)
-		prfline.writerow(retsu3)
+		prfline.writerow(retsu1)
 		prfline.writerows(list_csv)
 	
 	with open(out+"dll_list.csv","w") as csvfile:     #Open New File ( DLL list file )
