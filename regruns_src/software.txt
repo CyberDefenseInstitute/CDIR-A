@@ -1,0 +1,30 @@
+Classes\Exefile\Shell\Open\Command
+Microsoft\Active Setup\Installed Components
+Microsoft\SchedulingAgent
+Microsoft\Windows NT\CurrentVersion\Drivers32
+Microsoft\Windows NT\CurrentVersion\Image File Execution Options
+Microsoft\Windows NT\CurrentVersion\Terminal Server\Install\Software\Microsoft\Windows\CurrentVersion\Run
+Microsoft\Windows NT\CurrentVersion\Terminal Server\Install\Software\Microsoft\Windows\CurrentVersion\RunOnce
+Microsoft\Windows NT\CurrentVersion\Windows\Appinit_Dlls
+Microsoft\Windows NT\CurrentVersion\Winlogon\Notify
+Microsoft\Windows NT\CurrentVersion\Winlogon\Shell
+Microsoft\Windows NT\CurrentVersion\Winlogon\SpecialAccounts\UserList
+Microsoft\Windows NT\CurrentVersion\Winlogon\System
+Microsoft\Windows NT\CurrentVersion\Winlogon\Taskman
+Microsoft\Windows NT\CurrentVersion\Winlogon\Userinit
+Microsoft\Windows\CurrentVersion\Explorer\Browser Helper Objects
+Microsoft\Windows\CurrentVersion\Explorer\ShellExecuteHooks
+Microsoft\Windows\CurrentVersion\Policies\Explorer\Run
+Microsoft\Windows\CurrentVersion\Run
+Microsoft\Windows\CurrentVersion\RunOnce
+Microsoft\Windows\CurrentVersion\RunServices
+Microsoft\Windows\CurrentVersion\Shell Extensions\Approved
+Wow6432Node\Microsoft\Active Setup\Installed Components
+Wow6432Node\Microsoft\Windows NT\CurrentVersion\Drivers32
+Wow6432Node\Microsoft\Windows NT\CurrentVersion\Image File Execution Options
+Wow6432Node\Microsoft\Windows NT\CurrentVersion\Windows\Appinit_Dlls
+Wow6432Node\Microsoft\Windows\CurrentVersion\Explorer\Browser Helper Objects
+Wow6432Node\Microsoft\Windows\CurrentVersion\Explorer\ShellExecuteHooks
+Wow6432Node\Microsoft\Windows\CurrentVersion\Policies\Explorer\Run
+Wow6432Node\Microsoft\Windows\CurrentVersion\Run
+Wow6432Node\Microsoft\Windows\CurrentVersion\RunOnce
