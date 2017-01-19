@@ -186,7 +186,7 @@ def parseHive(file, outputdirectory, args, count):
     try:
         entries = parse_execution_entries(r)
     except NotAnAmcacheHive:
-        g_logger.error("doesn't appear to be an Amcache.hve hive")
+        g_logger.error("Doesn't appear to be an Amcache.hve hive")
         return
     with open(outputdirectory + "\\amcache_output.csv", "a") as pf:
         standardOutput(entries, args, file, pf, count)
@@ -197,7 +197,7 @@ def main(argv=None):
 
     parser = argparse.ArgumentParser(
         description="Parse program execution entries from the Amcache.hve Registry hive")
-    parser.add_argument('dirr')
+    parser.add_argument('dir')
     parser.add_argument('--output', '-o', help='-o <output directory>',
                         required=True)
     parser.add_argument("-v", action="store_true", dest="verbose",
@@ -215,15 +215,18 @@ def main(argv=None):
         import os, msvcrt
         msvcrt.setmode(sys.stdout.fileno(), os.O_BINARY)
 
-    inputdirectory=args.dirr
+    inputdirectory=args.dir
     outputdirectory=args.output
 
     hivefiles = searchHiveFiles(inputdirectory)
     for file in hivefiles:
         count = hivefiles.index(file)
         parseHive(file, outputdirectory, args, count)
-
-    print "Saved: %s\\amcache_output.csv" % outputdirectory
+    if len(hivefiles) <= 0:
+        print "Doesn't exist Amcache.hve files"
+        sys.exit(1)
+    else:
+        print "Saved: %s\\amcache_output.csv" % outputdirectory
 
 if __name__ == "__main__":
     main(argv=sys.argv)

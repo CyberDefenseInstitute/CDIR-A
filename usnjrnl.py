@@ -8,6 +8,7 @@ import binascii
 import re
 import os
 import time
+import sys
 import csv
 import argparse
 import struct
@@ -169,12 +170,18 @@ def parseusnjrnl(journal_filesize, start_point, pathname, journal_file, output_f
                 break
 
 if __name__ == '__main__':
+    exists_flag = False
     for root, dirs, files in os.walk(in_dir):
         for filename in files:
             if not re.match(r'\$UsnJrnl-\$J', filename):
                 continue
+            exists_flag = True
             journal_pathname = os.path.join(root, filename)
             journal_filesize = os.path.getsize(journal_pathname)
             time_delta = utility().get_timezone_str()
             check_start_point(journal_pathname)
-print "Saved: %s\\usnjrnl_output.csv" % out_dir
+    if exists_flag:
+        print "Saved: %s\\usnjrnl_output.csv" % out_dir
+    else:
+        print "Doesn't exist $UsnJrnl-$J files"
+        sys.exit(1)

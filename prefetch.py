@@ -62,18 +62,27 @@ def main():
         RtlDecompressBufferEx = ctypes.windll.ntdll.RtlDecompressBufferEx
     except AttributeError:
         print "Notice: Windows 8 or above version needs to parse Windows 10 prefetch."
-    searchDIR(in_dir)
+    exists_flag = searchDIR(in_dir)
+    if exists_flag:
+        print "Saved: %s\\prefetch_output.csv" % out_dir
+        print "Saved: %s\\prefetch_output_list.csv" % out_dir
+    else:
+        print "Doesn't exist prefetch(.pf) files"
+        sys.exit(1)
 
 def searchDIR(in_dir):
     fileindex = 0
+    exists_flag = False
     for root, dirs, files in os.walk(in_dir):
         for filename in files:
             if not re.search(r'\.pf$', filename):
                 continue
+            exists_flag = True
             pf_filepath = os.path.join(root, filename)
             chkheader(pf_filepath, root, filename, fileindex)
-            fileindex += 1            
+            fileindex += 1
     remove_dcpdir()
+    return exists_flag
 
 def chkheader(pf_filepath, root, filename, fileindex):
     with open(pf_filepath, "rb") as pf:
@@ -192,11 +201,15 @@ def parsepf(root, pf, filename, header_version, fileindex):
     output_csv = []
     output_list = []
 
+    #convert sjis -> utf-8 for output
+    filename_cp932 = filename.decode('cp932')
+    filename = filename_cp932.encode('utf-8')
+
     #prefetch filename for output list
     output_list.append(root+"\\"+filename+"\n")
 
     #search NULL in executable name
-    pf.seek(16)    
+    pf.seek(16)
     i = 0
     while i < 60:
         if utility().hextoint(pf.read(2)) == 0:
@@ -208,7 +221,7 @@ def parsepf(root, pf, filename, header_version, fileindex):
     exename_hex = binascii.hexlify(pf.read(i))
     exename_uni_str = codecs.decode(exename_hex, 'hex_codec').decode('utf-16')
     exename_utf_str = exename_uni_str.encode('utf-8')
-    
+
     #list for comparing to exe path
     exename_list = []
 
@@ -351,5 +364,3 @@ def parsepf(root, pf, filename, header_version, fileindex):
 
 if __name__ == '__main__':
     main()
-print "Saved: %s\\prefetch_output.csv" % out_dir
-print "Saved: %s\\prefetch_output_list.csv" % out_dir
