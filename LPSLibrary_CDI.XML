@@ -19,22 +19,30 @@ WHERE
     <DateModified>2016-01-05T10:18:01.7968916+09:00</DateModified>
   </LPQuery>
   <LPQuery>
-    <QueryName>【Misc】ファイル共有</QueryName>
-    <QueryDescription>イベントID 5140のレコードを抽出する。デフォルトでは有効になっていないため出力されない可能性が高い。</QueryDescription>
+    <QueryName>【Misc】ネットワーク共有</QueryName>
+    <QueryDescription>ソース Microsoft-Windows-Security-Auditing、イベントID 5140のレコードを抽出する。デフォルトでは有効になっていないため出力されない可能性が高い。同ソース、イベントIDでも出力するフィールドの内容が異なるパターンがあることを確認しているため、レコードによっては正しく出力されない可能性がある。</QueryDescription>
     <QueryData>SELECT 
  TimeGenerated AS 日時,
  ComputerName AS コンピュータ名,
- EventLog AS ファイル名, 
- Strings
+ EventLog AS ファイル名,
+ EXTRACT_TOKEN(Strings,0,'|') AS SID(),
+ EXTRACT_TOKEN(Strings,1,'|') AS ユーザ,
+ EXTRACT_TOKEN(Strings,2,'|') AS ドメイン,
+ EXTRACT_TOKEN(Strings,3,'|') AS ログオンID, 
+ EXTRACT_TOKEN(Strings,4,'|') AS ソースIP, 
+ EXTRACT_TOKEN(Strings,5,'|') AS ソースポート, 
+ EXTRACT_TOKEN(Strings,6,'|') AS 共有名
 FROM
  '[LOGFILEPATH]'
 WHERE
- EventID = 5140</QueryData>
-    <QueryID>483b75e7-3311-4100-9e24-b8c39a1afa37</QueryID>
+ SourceName = 'Microsoft-Windows-Security-Auditing' AND
+ EventID = 5140
+</QueryData>
+    <QueryID>5b964430-01a9-458b-882f-baf5883dd3b9</QueryID>
     <LogType>EVTLOG</LogType>
     <QueryCategory>ALL</QueryCategory>
     <IsFavorite>false</IsFavorite>
-    <DateModified>2015-08-26T12:26:26.5593738+09:00</DateModified>
+    <DateModified>2017-02-09T16:23:40.4490758+09:00</DateModified>
   </LPQuery>
   <LPQuery>
     <QueryName>【Misc】プロセス生成</QueryName>
@@ -54,6 +62,28 @@ WHERE
     <QueryCategory>ALL</QueryCategory>
     <IsFavorite>false</IsFavorite>
     <DateModified>2015-08-26T12:26:33.3562377+09:00</DateModified>
+  </LPQuery>
+  <LPQuery>
+    <QueryName>【Misc】リモートデスクトップユーザ認証</QueryName>
+    <QueryDescription>ソース Microsoft-Windows-TerminalServices-RemoteConnectionManager、イベントID 1149のレコードを抽出する。</QueryDescription>
+    <QueryData>SELECT 
+ TimeGenerated AS 日時,
+ ComputerName AS コンピュータ名,
+ EventLog AS ファイル名,
+ EXTRACT_TOKEN(Strings,0,'|') AS ユーザ,
+ EXTRACT_TOKEN(Strings,1,'|') AS ドメイン,
+ EXTRACT_TOKEN(Strings,2,'|') AS ソースIP
+FROM
+ '[LOGFILEPATH]'
+WHERE
+ SourceName = 'Microsoft-Windows-TerminalServices-RemoteConnectionManager' AND
+ EventID = 1149
+</QueryData>
+    <QueryID>185954dc-19f7-42d2-b658-a51cad629932</QueryID>
+    <LogType>EVTLOG</LogType>
+    <QueryCategory>EVT</QueryCategory>
+    <IsFavorite>false</IsFavorite>
+    <DateModified>2017-02-09T14:40:24.9533523+09:00</DateModified>
   </LPQuery>
   <LPQuery>
     <QueryName>【Misc】リモートデスクトップ全般</QueryName>
@@ -155,7 +185,6 @@ WHERE
  ComputerName AS コンピュータ名,
  EventLog AS ファイル名, 
  SID, 
-EventID,
  EXTRACT_TOKEN(Strings,0,'|') AS サービス名,
  EXTRACT_TOKEN(Strings,1,'|') AS サービスファイル名,
  EXTRACT_TOKEN(Strings,2,'|') AS 種類,
@@ -170,7 +199,50 @@ WHERE
     <LogType>EVTLOG</LogType>
     <QueryCategory>ALL</QueryCategory>
     <IsFavorite>false</IsFavorite>
-    <DateModified>2016-01-05T10:19:40.0464806+09:00</DateModified>
+    <DateModified>2017-01-26T14:56:58.6070465+09:00</DateModified>
+  </LPQuery>
+  <LPQuery>
+    <QueryName>【サービス】開始の種類変更</QueryName>
+    <QueryDescription>イベントID 7040のレコードを抽出する。サービスの開始の種類の変更がわかる。
+</QueryDescription>
+    <QueryData>SELECT 
+ TimeGenerated AS 日時,
+ ComputerName AS コンピュータ名,
+ EventLog AS ファイル名, 
+ EXTRACT_TOKEN(Strings,0,'|') AS サービス名,
+ EXTRACT_TOKEN(Strings,1,'|') AS 変更前タイプ,
+ EXTRACT_TOKEN(Strings,1,'|') AS 変更後タイプ,
+ EXTRACT_TOKEN(Strings,1,'|') AS 関連サービス,
+FROM
+ '[LOGFILEPATH]'
+WHERE
+ EventID = 7040
+</QueryData>
+    <QueryID>10a3bfc6-5532-484f-9ebd-41e808f6b64e</QueryID>
+    <LogType>EVTLOG</LogType>
+    <QueryCategory>ALL</QueryCategory>
+    <IsFavorite>false</IsFavorite>
+    <DateModified>2017-02-09T16:46:16.6361166+09:00</DateModified>
+  </LPQuery>
+  <LPQuery>
+    <QueryName>【サービス】強制終了</QueryName>
+    <QueryDescription>イベントID 7034のレコードを抽出する。強制終了したサービス名と終了回数がわかる。</QueryDescription>
+    <QueryData>SELECT 
+ TimeGenerated AS 日時,
+ ComputerName AS コンピュータ名,
+ EventLog AS ファイル名, 
+ EXTRACT_TOKEN(Strings,0,'|') AS サービス名,
+ EXTRACT_TOKEN(Strings,1,'|') AS 回数
+FROM
+ '[LOGFILEPATH]'
+WHERE
+ EventID = 7034
+</QueryData>
+    <QueryID>db19cc5e-6e8b-4e8a-a1ac-4b66c076cf96</QueryID>
+    <LogType>EVTLOG</LogType>
+    <QueryCategory>ALL</QueryCategory>
+    <IsFavorite>false</IsFavorite>
+    <DateModified>2017-02-09T16:32:33.0543004+09:00</DateModified>
   </LPQuery>
   <LPQuery>
     <QueryName>【サービス】状態変更</QueryName>
@@ -317,6 +389,59 @@ WHERE
     <QueryCategory>EVT</QueryCategory>
     <IsFavorite>false</IsFavorite>
     <DateModified>2016-01-05T10:47:30.0630544+09:00</DateModified>
+  </LPQuery>
+  <LPQuery>
+    <QueryName>【認証】Kerberos事前認証失敗</QueryName>
+    <QueryDescription>ソース Microsoft-Windows-Security-Auditing、イベントID 4771のレコードを抽出する。ドメインコントローラにのみ残る。</QueryDescription>
+    <QueryData>SELECT
+ TimeGenerated AS 日時,
+ ComputerName AS コンピュータ名,
+ EventLog AS ファイル名,
+ EXTRACT_TOKEN(Strings,0,'|') AS ユーザ,
+ EXTRACT_TOKEN(Strings,1,'|') AS SID,
+ EXTRACT_TOKEN(Strings,2,'|') AS サービス名,
+ EXTRACT_TOKEN(Strings,3,'|') AS チケットオプション,
+ EXTRACT_TOKEN(Strings,4,'|') AS エラーコード,
+ EXTRACT_TOKEN(Strings,5,'|') AS 認証種類,
+ EXTRACT_TOKEN(Strings,6,'|') AS ソースIP,
+ EXTRACT_TOKEN(Strings,7,'|') AS ソースポート
+FROM '[LOGFILEPATH]'
+WHERE
+ SourceName = 'Microsoft-Windows-Security-Auditing' AND
+ EventID=4771</QueryData>
+    <QueryID>2785eab3-f3b1-4eb3-8a31-24441879fd1b</QueryID>
+    <LogType>EVTLOG</LogType>
+    <QueryCategory>ALL</QueryCategory>
+    <IsFavorite>false</IsFavorite>
+    <DateModified>2017-02-09T15:37:56.3745646+09:00</DateModified>
+  </LPQuery>
+  <LPQuery>
+    <QueryName>【認証】Kerberos認証チケット(TGT)要求</QueryName>
+    <QueryDescription>ソース Microsoft-Windows-Security-Auditing、イベントID 4768のレコードを抽出する。ドメインコントローラにのみ残る。</QueryDescription>
+    <QueryData>SELECT
+ TimeGenerated AS 日時,
+ ComputerName AS コンピュータ名,
+ EventLog AS ファイル名,
+ EXTRACT_TOKEN(Strings,0,'|') AS ユーザ,
+ EXTRACT_TOKEN(Strings,1,'|') AS ドメイン,
+ EXTRACT_TOKEN(Strings,2,'|') AS SID,
+ EXTRACT_TOKEN(Strings,3,'|') AS サービス名,
+ EXTRACT_TOKEN(Strings,5,'|') AS チケットオプション,
+ EXTRACT_TOKEN(Strings,6,'|') AS 結果コード,
+ EXTRACT_TOKEN(Strings,7,'|') AS 暗号化の種類,
+ EXTRACT_TOKEN(Strings,8,'|') AS 事前認証の種類,
+ EXTRACT_TOKEN(Strings,9,'|') AS ソースIP,
+ EXTRACT_TOKEN(Strings,10,'|') AS ソースポート
+FROM '[LOGFILEPATH]'
+WHERE
+ SourceName = 'Microsoft-Windows-Security-Auditing' AND
+ EventID=4768
+</QueryData>
+    <QueryID>2a9ba26f-a366-4fa7-b4ae-37711db015a0</QueryID>
+    <LogType>EVTLOG</LogType>
+    <QueryCategory>ALL</QueryCategory>
+    <IsFavorite>false</IsFavorite>
+    <DateModified>2017-02-09T15:54:46.0841398+09:00</DateModified>
   </LPQuery>
   <LPQuery>
     <QueryName>【認証】ネットワークログオン</QueryName>
@@ -507,7 +632,7 @@ WHERE
     <QueryName>【認証】ログオン失敗</QueryName>
     <QueryDescription>ソース Microsoft-Windows-Security-Auditing、イベントID 4625-4633, 4635のレコードを抽出する。
 
-デフォルトの監査設定ではクライアント系は無効でサーバ系は有効に設定されている。</QueryDescription>
+そのうちアカウントが空欄のレコードは除外する。デフォルトの監査設定ではクライアント系は無効でサーバ系は有効に設定されている。</QueryDescription>
     <QueryData>SELECT
  TimeGenerated AS 日時,
  ComputerName AS コンピュータ名,
@@ -516,6 +641,7 @@ WHERE
  EXTRACT_TOKEN(Strings,5,'|') AS アカウント,
  EXTRACT_TOKEN(Strings,6,'|') AS ドメイン,
  EXTRACT_TOKEN(Strings,10,'|') AS タイプ,
+ EXTRACT_TOKEN(Strings,13,'|') AS マシン名,
  EXTRACT_TOKEN(Strings,17,'|') AS プロセスID,
  EXTRACT_TOKEN(Strings,18,'|') AS プロセス名,
  EXTRACT_TOKEN(Strings,19,'|') AS IPアドレス,
@@ -526,12 +652,14 @@ WHERE
  SourceName = 'Microsoft-Windows-Security-Auditing' AND
  (EventID = 4625 OR EventID = 4626 OR EventID = 4627 OR EventID = 4628 OR 
   EventID = 4629 OR EventID = 4630 OR EventID = 4631 OR EventID = 4632 OR 
-  EventID = 4633 OR EventID = 4635)</QueryData>
+  EventID = 4633 OR EventID = 4635) AND
+  アカウント &lt;&gt; ''
+</QueryData>
     <QueryID>1af09083-c0e5-4bef-aa45-8fee791bbd8a</QueryID>
     <LogType>EVTLOG</LogType>
     <QueryCategory>EVT</QueryCategory>
     <IsFavorite>false</IsFavorite>
-    <DateModified>2016-01-05T11:27:21.3599996+09:00</DateModified>
+    <DateModified>2017-02-09T15:37:18.6839464+09:00</DateModified>
   </LPQuery>
   <LPQuery>
     <QueryName>【認証】ログオン全般</QueryName>
@@ -615,6 +743,29 @@ WHERE
     <QueryCategory>EVT</QueryCategory>
     <IsFavorite>false</IsFavorite>
     <DateModified>2016-01-05T11:03:06.9966356+09:00</DateModified>
+  </LPQuery>
+  <LPQuery>
+    <QueryName>【認証】資格情報の確認(エラー)</QueryName>
+    <QueryDescription>ソース Microsoft-Windows-Security-Auditing、イベントID 4776のレコードを抽出する。そのうちエラーコードが0x0(成功)のレコードは除外する。</QueryDescription>
+    <QueryData>SELECT
+ TimeGenerated AS 日時,
+ ComputerName AS コンピュータ名,
+ EventLog AS ファイル名,
+ EXTRACT_TOKEN(Strings,0,'|') AS 認証パッケージ,
+ EXTRACT_TOKEN(Strings,1,'|') AS アカウント,
+ EXTRACT_TOKEN(Strings,2,'|') AS ソース名,
+ EXTRACT_TOKEN(Strings,3,'|') AS エラーコード
+FROM '[LOGFILEPATH]'
+WHERE
+ SourceName = 'Microsoft-Windows-Security-Auditing' AND
+ EventID=4776 AND
+ エラーコード &lt;&gt; '0x0'
+</QueryData>
+    <QueryID>69ab90f8-3149-4c12-ba31-5d5dc5d9b009</QueryID>
+    <LogType>EVTLOG</LogType>
+    <QueryCategory>ALL</QueryCategory>
+    <IsFavorite>false</IsFavorite>
+    <DateModified>2017-02-09T15:37:40.7638933+09:00</DateModified>
   </LPQuery>
   <LPQuery>
     <QueryName>【認証】新しい資格情報を指定したログオン</QueryName>
