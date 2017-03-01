@@ -6,6 +6,7 @@ cdir-analyzer (parser)はcdir-collectorで収集したデータのパーサ群�
 * shimcache_src - shimcache.exeのソースコード
 * LPSLibrary_CDI.XML - Log Parser Studio用のライブラリ
 * amcache.py - Amcacheのパーサ
+* mft.exe - MFTのパーサ
 * ntuser.txt - regruns.exeで読み込むリストファイル
 * prefetch.py - プリフェッチのパーサ
 * regruns.exe - Runキーなどの自動実行設定用キーのパーサ
