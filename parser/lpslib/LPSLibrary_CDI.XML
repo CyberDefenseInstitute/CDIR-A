@@ -1,8 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ArrayOfLPQuery xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <LPQuery>
-    <QueryName>【AD/DC】Kerberos事前認証失敗</QueryName>
-    <QueryDescription>ソース Microsoft-Windows-Security-Auditing、イベントID 4771のレコードを抽出する。ドメインコントローラにのみ残る。</QueryDescription>
+    <QueryName>【AD】Kerberosサービスチケット(ST)要求 </QueryName>
+    <QueryDescription>ソース Microsoft-Windows-Security-Auditing、イベントID 4769のレコードを抽出する。</QueryDescription>
+    <QueryData>SELECT
+ TimeGenerated AS 日時,
+ ComputerName AS コンピュータ名,
+ EventLog AS ファイル名,
+ EXTRACT_TOKEN(Strings,0,'|') AS ユーザ,
+ EXTRACT_TOKEN(Strings,1,'|') AS ドメイン,
+ EXTRACT_TOKEN(Strings,9,'|') AS ログオンGUID,
+ EXTRACT_TOKEN(Strings,2,'|') AS サービス名,
+ EXTRACT_TOKEN(Strings,3,'|') AS サービスID,
+ EXTRACT_TOKEN(Strings,4,'|') AS チケットオプション,
+ EXTRACT_TOKEN(Strings,8,'|') AS エラーコード,
+ EXTRACT_TOKEN(Strings,5,'|') AS 暗号化の種類,
+ EXTRACT_TOKEN(Strings,6,'|') AS ソースIP,
+ EXTRACT_TOKEN(Strings,7,'|') AS ソースポート
+FROM '[LOGFILEPATH]'
+WHERE
+ SourceName = 'Microsoft-Windows-Security-Auditing' AND
+ EventID=4769
+
+</QueryData>
+    <QueryID>d0d60bb0-5430-41c1-a11b-9806fa8157c3</QueryID>
+    <LogType>EVTLOG</LogType>
+    <QueryCategory>ALL</QueryCategory>
+    <IsFavorite>false</IsFavorite>
+    <DateModified>2017-08-17T19:21:48.457157+09:00</DateModified>
+  </LPQuery>
+  <LPQuery>
+    <QueryName>【AD】Kerberos事前認証失敗</QueryName>
+    <QueryDescription>ソース Microsoft-Windows-Security-Auditing、イベントID 4771のレコードを抽出する。</QueryDescription>
     <QueryData>SELECT
  TimeGenerated AS 日時,
  ComputerName AS コンピュータ名,
@@ -20,15 +49,15 @@ FROM
 WHERE
  SourceName = 'Microsoft-Windows-Security-Auditing' AND
  EventID=4771</QueryData>
-    <QueryID>136a5e3e-3e80-4618-bcb5-c6a15bae2c95</QueryID>
+    <QueryID>29c30bd9-73aa-46ae-880a-cde3e50cf99b</QueryID>
     <LogType>EVTLOG</LogType>
     <QueryCategory>ALL</QueryCategory>
     <IsFavorite>false</IsFavorite>
-    <DateModified>2017-07-03T09:32:36.9266308+09:00</DateModified>
+    <DateModified>2017-08-17T19:22:12.6889302+09:00</DateModified>
   </LPQuery>
   <LPQuery>
-    <QueryName>【AD/DC】Kerberos認証チケット(TGT)要求</QueryName>
-    <QueryDescription>ソース Microsoft-Windows-Security-Auditing、イベントID 4768のレコードを抽出する。ドメインコントローラにのみ残る。</QueryDescription>
+    <QueryName>【AD】Kerberos認証チケット(TGT)要求</QueryName>
+    <QueryDescription>ソース Microsoft-Windows-Security-Auditing、イベントID 4768のレコードを抽出する。</QueryDescription>
     <QueryData>SELECT
  TimeGenerated AS 日時,
  ComputerName AS コンピュータ名,
@@ -48,11 +77,11 @@ WHERE
  SourceName = 'Microsoft-Windows-Security-Auditing' AND
  EventID=4768
 </QueryData>
-    <QueryID>7f25c09a-729d-429e-b0a0-98f0f0833033</QueryID>
+    <QueryID>9df308bd-cb6a-4923-9685-b8f3f53ff631</QueryID>
     <LogType>EVTLOG</LogType>
     <QueryCategory>ALL</QueryCategory>
     <IsFavorite>false</IsFavorite>
-    <DateModified>2017-07-03T09:32:49.1789591+09:00</DateModified>
+    <DateModified>2017-08-17T19:22:39.257197+09:00</DateModified>
   </LPQuery>
   <LPQuery>
     <QueryName>【Misc】PowerShell</QueryName>
@@ -866,6 +895,32 @@ WHERE
     <QueryCategory>EVT</QueryCategory>
     <IsFavorite>false</IsFavorite>
     <DateModified>2016-01-05T11:28:00.5940728+09:00</DateModified>
+  </LPQuery>
+  <LPQuery>
+    <QueryName>【認証】特権割り当て</QueryName>
+    <QueryDescription>ソース Microsoft-Windows-Security-Auditing、イベントID 4672のうち、セキュリティID S-1-5-18を除外して抽出する。</QueryDescription>
+    <QueryData>SELECT
+ TimeGenerated AS 日時,
+ ComputerName AS コンピュータ名,
+ EventLog AS ファイル名,
+ EventID AS イベントID,
+ EXTRACT_TOKEN(Strings,0,'|') AS セキュリティID,
+ EXTRACT_TOKEN(Strings,1,'|') AS アカウント,
+ EXTRACT_TOKEN(Strings,2,'|') AS ドメイン,
+ EXTRACT_TOKEN(Strings,3,'|') AS ログオンID,
+ EXTRACT_TOKEN(Strings,4,'|') AS 特権
+FROM
+ '[LOGFILEPATH]'
+WHERE
+ SourceName = 'Microsoft-Windows-Security-Auditing' AND
+ EventID = 4672 AND
+ セキュリティID &lt;&gt; 'S-1-5-18'
+</QueryData>
+    <QueryID>6c83e068-e338-4031-9163-161f950e18f0</QueryID>
+    <LogType>EVTLOG</LogType>
+    <QueryCategory>EVT</QueryCategory>
+    <IsFavorite>false</IsFavorite>
+    <DateModified>2017-08-12T22:17:33.8696917+09:00</DateModified>
   </LPQuery>
   <LPQuery>
     <QueryName>【認証】別アカウントのログオン</QueryName>
