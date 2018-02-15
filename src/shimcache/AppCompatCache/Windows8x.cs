@@ -7,7 +7,7 @@ namespace AppCompatCache
 {
     public class Windows8x : IAppCompatCache
     {
-        public Windows8x(byte[] rawBytes, AppCompatCache.OperatingSystemVersion os, string computerName)
+        public Windows8x(byte[] rawBytes, AppCompatCache.OperatingSystemVersion os, int controlSet, string computerName)
         {
             Entries = new List<CacheEntry>();
 
@@ -15,10 +15,12 @@ namespace AppCompatCache
 
             var signature = "00ts";
 
+            ControlSet = controlSet;
+
+            EntryCount = -1;
+
             if (os == AppCompatCache.OperatingSystemVersion.Windows81_Windows2012R2)
-            {
                 signature = "10ts";
-            }
 
             var position = 0;
 
@@ -32,9 +34,7 @@ namespace AppCompatCache
                     };
 
                     if (ce.Signature != signature)
-                    {
                         break;
-                    }
 
                     ce.ComputerName = computerName;
 
@@ -49,21 +49,20 @@ namespace AppCompatCache
                     ce.PathSize = BitConverter.ToUInt16(rawBytes, index);
                     index += 2;
 
-                    ce.Path = Encoding.Unicode.GetString(rawBytes, index, ce.PathSize);
+                    ce.Path = Encoding.Unicode.GetString(rawBytes, index, ce.PathSize).Replace(@"\??\", "");
                     index += ce.PathSize;
 
+                    var packageLen = BitConverter.ToUInt16(rawBytes, index);
+                    index += 2;
+                    //skip package data
+                    index += packageLen;
+
                     // skip 4 unknown (insertion flags?)
-                    var Flag = BitConverter.ToInt32(rawBytes, index);
-                    Flag = Flag & 2;
-                    if (Flag == 2)
-                        ce.Flag = "Executed";
+                    ce.InsertFlags = (AppCompatCache.InsertFlag)BitConverter.ToInt32(rawBytes, index);
                     index += 4;
 
                     // skip 4 unknown (shim flags?)
                     index += 4;
-
-                    // skip 2 unknown
-                    index += 2;
 
                     ce.LastModified =
                         DateTimeOffset.FromFileTime(BitConverter.ToInt64(rawBytes, index));
@@ -78,6 +77,12 @@ namespace AppCompatCache
                     ce.Data = rawBytes.Skip(index).Take(ce.DataSize).ToArray();
                     index += ce.DataSize;
 
+                    if ((ce.InsertFlags & AppCompatCache.InsertFlag.Executed) == AppCompatCache.InsertFlag.Executed)
+                        ce.Flag = AppCompatCache.Execute.Executed;
+                    else
+                        ce.Flag = AppCompatCache.Execute.Unknown;
+
+                    ce.ControlSet = controlSet;
                     ce.EntryPosition = position;
                     Entries.Add(ce);
                     position += 1;
@@ -94,5 +99,7 @@ namespace AppCompatCache
         }
 
         public List<CacheEntry> Entries { get; }
+        public int EntryCount { get; }
+        public int ControlSet { get; }
     }
 }

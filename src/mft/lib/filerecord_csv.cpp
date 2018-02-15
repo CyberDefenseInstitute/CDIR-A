@@ -166,15 +166,15 @@ int FileRecord::ParseAttr_csv(ATTR attr, unsigned char *content) {
 
   attrid = attr.header.base.attr_typeid;
 
-  if(!attr.header.base.flag_nonresident) {
-    nonresident = false;
-    header_size = sizeof(ATTR_HEADER_RESIDENT);
-    content_size = attr.header.base.attr_len - sizeof(ATTR_HEADER_RESIDENT);
-  }
-  else {
+  if(attr.header.base.flag_nonresident) {
     nonresident = true;
     header_size = sizeof(ATTR_HEADER_NONRESIDENT);
     content_size = attr.header.base.attr_len - sizeof(ATTR_HEADER_NONRESIDENT);
+  }
+  else {
+    nonresident = false;
+    header_size = sizeof(ATTR_HEADER_RESIDENT);
+    content_size = attr.header.base.attr_len - sizeof(ATTR_HEADER_RESIDENT);
   }
 
   switch(attrid) {
@@ -240,11 +240,10 @@ int FileRecord::ParseAttr_csv(ATTR attr, unsigned char *content) {
 
 
     case ATTRTYPEID_DATA:
-      if(!nonresident) { // resident
-        csvrecord.filesize = attr.header.base.attr_len-attr.header.resident.offset;
-      }
-      else {
-        csvrecord.filesize = attr.header.nonresident.actual_attr_size;
+      if(attr.header.base.name_len == 0) {
+        csvrecord.filesize = nonresident ? 
+            attr.header.nonresident.actual_attr_size : 
+            attr.header.resident.size;
       }
       break;
 

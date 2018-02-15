@@ -7,11 +7,24 @@ namespace AppCompatCache
 {
     public class Windows10 : IAppCompatCache
     {
-        public Windows10(byte[] rawBytes, string computerName)
+        public int ExpectedEntries { get; }
+
+        public Windows10(byte[] rawBytes, int controlSet, string computerName)
         {
             Entries = new List<CacheEntry>();
 
-            var index = 48;
+            ExpectedEntries = 0;
+
+            var offsetToRecords = BitConverter.ToInt32(rawBytes, 0);
+
+            ExpectedEntries = BitConverter.ToInt32(rawBytes, 0x24);
+            
+            if (offsetToRecords == 0x34)
+                ExpectedEntries = BitConverter.ToInt32(rawBytes, 0x28);
+
+            var index = offsetToRecords;
+            ControlSet = controlSet;
+            EntryCount = -1;
 
             var position = 0;
 
@@ -25,9 +38,7 @@ namespace AppCompatCache
                     };
 
                     if (ce.Signature != "10ts")
-                    {
                         break;
-                    }
 
                     ce.ComputerName = computerName;
 
@@ -41,7 +52,7 @@ namespace AppCompatCache
 
                     ce.PathSize = BitConverter.ToUInt16(rawBytes, index);
                     index += 2;
-                    ce.Path = Encoding.Unicode.GetString(rawBytes, index, ce.PathSize);
+                    ce.Path = Encoding.Unicode.GetString(rawBytes, index, ce.PathSize).Replace(@"\??\", "");
                     index += ce.PathSize;
 
                     ce.LastModified =
@@ -51,15 +62,13 @@ namespace AppCompatCache
 
                     index += 8;
 
-                    // Unknown Executed Flag
-                    ce.Flag = "N/A";
-
                     ce.DataSize = BitConverter.ToInt32(rawBytes, index);
                     index += 4;
 
                     ce.Data = rawBytes.Skip(index).Take(ce.DataSize).ToArray();
                     index += ce.DataSize;
-
+                    ce.Flag = AppCompatCache.Execute.NA;
+                    ce.ControlSet = controlSet;
                     ce.EntryPosition = position;                    
                     Entries.Add(ce);
                     position += 1;
@@ -76,5 +85,7 @@ namespace AppCompatCache
         }
 
         public List<CacheEntry> Entries { get; }
+        public int EntryCount { get; }
+        public int ControlSet { get; }
     }
 }

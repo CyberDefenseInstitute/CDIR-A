@@ -7,11 +7,12 @@ namespace AppCompatCache
 {
     public class VistaWin2k3Win2k8 : IAppCompatCache
     {
-        public VistaWin2k3Win2k8(byte[] rawBytes, bool is32Bit, string computerName)
+        public VistaWin2k3Win2k8(byte[] rawBytes, bool is32Bit, int controlSet, string computerName)
         {
             Entries = new List<CacheEntry>();
 
             var index = 4;
+            ControlSet = controlSet;
 
             EntryCount = BitConverter.ToInt32(rawBytes, index);
 
@@ -51,6 +52,7 @@ namespace AppCompatCache
                         index += 8;
 
                         // skip 4 unknown (insertion flags?)
+                        ce.InsertFlags = (AppCompatCache.InsertFlag)BitConverter.ToInt32(rawBytes, index);
                         index += 4;
 
                         // skip 4 unknown (shim flags?)
@@ -60,17 +62,16 @@ namespace AppCompatCache
 
                         //                        if ((ce.InsertFlags & AppCompatCache.InsertFlag.Executed) == AppCompatCache.InsertFlag.Executed)
                         //                        {
-                        //                            ce.Executed = AppCompatCache.Execute.Yes;
+                        //                            ce.Executed = AppCompatCache.Execute.Executed;
                         //                        }
                         //                        else
                         //                        {
-                        //                            ce.Executed = AppCompatCache.Execute.No;
+                        //                            ce.Executed = AppCompatCache.Execute.Unknown;
                         //                        }
-
-                        // Unknown Executed Flag
-                        ce.Flag = "N/A";
+                        ce.Flag = AppCompatCache.Execute.NA;
 
                         ce.EntryPosition = position;
+                        ce.ControlSet = controlSet;
                         Entries.Add(ce);
                         position += 1;
 
@@ -115,6 +116,7 @@ namespace AppCompatCache
                         index += 8;
 
                         // skip 4 unknown (insertion flags?)
+                        ce1.InsertFlags = (AppCompatCache.InsertFlag)BitConverter.ToInt32(rawBytes, index);
                         index += 4;
 
                         // skip 4 unknown (shim flags?)
@@ -122,24 +124,22 @@ namespace AppCompatCache
 
                         ce1.Path = Encoding.Unicode.GetString(rawBytes, (int)pathOffset, ce1.PathSize).Replace(@"\??\", "");
 
-                        // set N/A until structure is known
-                        ce1.Flag = "N/A";
+                        if ((ce1.InsertFlags & AppCompatCache.InsertFlag.Executed) == AppCompatCache.InsertFlag.Executed)
+                            ce1.Flag = AppCompatCache.Execute.Executed;
+                        else
+                            ce1.Flag = AppCompatCache.Execute.Unknown;
 
                         ce1.EntryPosition = position;
                         Entries.Add(ce1);
                         position += 1;
 
                         if (Entries.Count == EntryCount)
-                        {
                             break;
-                        }
                     }
                     catch (Exception ex)
                     {
                         if (Entries.Count < EntryCount)
-                        {
                             throw;
-                        }
                         //take what we can get
                         break;
                     }

@@ -1,7 +1,9 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using AppCompatCache;
+using Microsoft.Win32;
 using CsvHelper;
 using CsvHelper.Configuration;
 
@@ -64,13 +66,12 @@ namespace AppCompatCacheParser
                 Directory.CreateDirectory(outDir);
 
             var outFilename = Path.Combine(outDir, outFileBase);
-            var sw = new StreamWriter(outFilename, true, System.Text.Encoding.UTF8);
+            var sw = new StreamWriter(outFilename, true, new System.Text.UTF8Encoding(false));
             sw.AutoFlush = true;
             var csv = new CsvWriter(sw);
             csv.Configuration.RegisterClassMap<CacheOutputMap>();
             csv.Configuration.Delimiter = "\t";
-            csv.Configuration.Encoding = System.Text.Encoding.UTF8;
-            csv.Configuration.IgnoreQuotes = false;
+//            csv.Configuration.IgnoreQuotes = false;
             csv.Configuration.Quote = '"';
             csv.Configuration.QuoteAllFields = true;
 
@@ -78,9 +79,9 @@ namespace AppCompatCacheParser
                 if (args[3] == "--noheader")
                     csv.Configuration.HasHeaderRecord = false;
                 else
-                    csv.WriteHeader<CacheEntry>();
+                    csv.Configuration.HasHeaderRecord = true;
             else
-                csv.WriteHeader<CacheEntry>();
+                csv.Configuration.HasHeaderRecord = true;
 
             bool entryFlag = false;
             foreach (string fileName in Directory.GetFiles(inDir, "*", SearchOption.AllDirectories))
@@ -88,36 +89,40 @@ namespace AppCompatCacheParser
                 DirectoryInfo parentFolder = Directory.GetParent(fileName);
                 if (outDir.Contains(parentFolder.ToString()))
                     continue;
-                try
+                Stream st = File.OpenRead(fileName);
+                if (st.Length < 4)
+                    continue;
+
+                BinaryReader br = new BinaryReader(st);
+                if (br.ReadInt32() != 1718052210) // means not "regf"
+                    continue;
+
+                br.BaseStream.Seek(48, SeekOrigin.Begin);
+                if (br.ReadUInt16() != 'S') // means not SYSTEM hive 
+                    continue;
+
+                br.Close();
+                st.Close();
+                var appCompat = new AppCompatCache.AppCompatCache(fileName, 0); // 0: current, -1: all control sets
+
+                if (appCompat.Caches.Any())
                 {
-                    Stream st = File.OpenRead(fileName);
-                    if (st.Length < 4)
-                        continue;
-
-                    BinaryReader br = new BinaryReader(st);
-                    if (br.ReadInt32() != 1718052210) // means not "regf"
-                        continue;
-
-                    br.BaseStream.Seek(48, SeekOrigin.Begin);
-                    if (br.ReadUInt16() != 'S') // means not SYSTEM hive 
-                        continue;
-
-                    br.Close();
-                    st.Close();
-                    var appCompat = new AppCompatCache.AppCompatCache(fileName);
-
-                    if ((appCompat.Cache != null))
+                    foreach (var appCompatCach in appCompat.Caches)
                     {
-                        Console.WriteLine($"Found: {appCompat.Cache.Entries.Count:N0} entries, '{fileName}'");                    
-                        csv.WriteRecords(appCompat.Cache.Entries);
-                        entryFlag = true;
-                    }
 
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Skip: " + fileName);
-                    //Console.Error.WriteLine($"Skip: {ex.Message}");
+                        try
+                        {
+                            Console.WriteLine(
+                                $"Found {appCompatCach.Entries.Count:N0} entries for {appCompat.OperatingSystem} in ControlSet00{appCompatCach.ControlSet}");
+
+                            csv.WriteRecords(appCompatCach.Entries);
+                            entryFlag = true;
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.Error.WriteLine($"Skip: " + fileName);
+                        }
+                    }
                 }
             }
 
@@ -131,13 +136,13 @@ namespace AppCompatCacheParser
         }
     }
 
-    public sealed class CacheOutputMap : CsvClassMap<CacheEntry>
+    public sealed class CacheOutputMap : ClassMap<CacheEntry>
     {
         public CacheOutputMap()
         {
             Map(m => m.ComputerName);
             Map(m => m.Path);
-            Map(m => m.LastModified).TypeConverterOption("yyyy/MM/dd HH:mm:ss.fff");
+            Map(m => m.LastModified).TypeConverterOption.Format("yyyy/MM/dd HH:mm:ss.fff");
             Map(m => m.TimeZone);
             Map(m => m.Flag);
             Map(m => m.EntryPosition);

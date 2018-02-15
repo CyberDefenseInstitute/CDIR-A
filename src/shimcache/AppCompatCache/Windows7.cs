@@ -7,17 +7,23 @@ namespace AppCompatCache
 {
     public class Windows7 : IAppCompatCache
     {
-        public Windows7(byte[] rawBytes, bool is32Bit, string computerName)
+        public Windows7(byte[] rawBytes, bool is32Bit, int controlSet, string computerName)
         {
             Entries = new List<CacheEntry>();
 
             var index = 4;
+            ControlSet = controlSet;
 
-            var cacheItems = BitConverter.ToUInt32(rawBytes, index);
+            EntryCount = BitConverter.ToInt32(rawBytes, index);
 
             index = 128;
 
             var position = 0;
+
+            if (EntryCount == 0)
+            {
+                return;;
+            }
 
             if ((is32Bit))
             {
@@ -46,10 +52,7 @@ namespace AppCompatCache
                         index += 8;
 
                         // skip 4 unknown (insertion flags?)
-                        var Flag = BitConverter.ToInt32(rawBytes, index);
-                        Flag = Flag & 2;
-                        if (Flag == 2)
-                            ce.Flag = "Executed";
+                        ce.InsertFlags = (AppCompatCache.InsertFlag)BitConverter.ToInt32(rawBytes, index);
                         index += 4;
 
                         // skip 4 unknown (shim flags?)
@@ -61,19 +64,25 @@ namespace AppCompatCache
                         var dataOffset = BitConverter.ToUInt32(rawBytes, index);
                         index += 4;
 
-                        ce.Path = Encoding.Unicode.GetString(rawBytes, pathOffset, ce.PathSize);
+                        ce.Path = Encoding.Unicode.GetString(rawBytes, pathOffset, ce.PathSize).Replace(@"\??\","");
+
+                        if ((ce.InsertFlags & AppCompatCache.InsertFlag.Executed) == AppCompatCache.InsertFlag.Executed)
+                            ce.Flag = AppCompatCache.Execute.Executed;
+                        else
+                            ce.Flag = AppCompatCache.Execute.Unknown;
 
                         ce.EntryPosition = position;
+                        ce.ControlSet = controlSet;
                         Entries.Add(ce);
                         position += 1;
 
-                        if (Entries.Count == cacheItems)
-                        {
+                        if (Entries.Count == EntryCount)
                             break;
-                        }
                     }
                     catch (Exception ex)
                     {
+                        if (Entries.Count < EntryCount)
+                            throw;
                         //TODO Report this
                         Debug.WriteLine(ex.Message);
                         //take what we can get
@@ -87,11 +96,11 @@ namespace AppCompatCache
                 {
                     try
                     {
-                        var ce = new CacheEntry();
+                        var ce1 = new CacheEntry();
 
-                        ce.ComputerName = computerName;
+                        ce1.ComputerName = computerName;
 
-                        ce.PathSize = BitConverter.ToUInt16(rawBytes, index);
+                        ce1.PathSize = BitConverter.ToUInt16(rawBytes, index);
                         index += 2;
 
                         var maxPathSize = BitConverter.ToUInt16(rawBytes, index);
@@ -103,18 +112,15 @@ namespace AppCompatCache
                         var pathOffset = BitConverter.ToInt64(rawBytes, index);
                         index += 8;
 
-                        ce.LastModified =
+                        ce1.LastModified =
                             DateTimeOffset.FromFileTime(BitConverter.ToInt64(rawBytes, index));
 
-                        ce.TimeZone = ce.LastModified.ToString("zzz");
+                        ce1.TimeZone = ce1.LastModified.ToString("zzz");
 
                         index += 8;
 
                         // skip 4 unknown (insertion flags?)
-                        var Flag = BitConverter.ToInt32(rawBytes, index);
-                        Flag = Flag & 2;
-                        if(Flag == 2)
-                            ce.Flag = "Executed";
+                        ce1.InsertFlags = (AppCompatCache.InsertFlag)BitConverter.ToInt32(rawBytes, index);
                         index += 4;
 
                         // skip 4 unknown (shim flags?)
@@ -126,22 +132,28 @@ namespace AppCompatCache
                         var dataOffset = BitConverter.ToUInt64(rawBytes, index);
                         index += 8;
 
-                        ce.Path = Encoding.Unicode.GetString(rawBytes, (int) pathOffset, ce.PathSize);
+                        ce1.Path = Encoding.Unicode.GetString(rawBytes, (int) pathOffset, ce1.PathSize).Replace(@"\??\", "");
 
-                        ce.EntryPosition = position;
-                        Entries.Add(ce);
+                        if ((ce1.InsertFlags & AppCompatCache.InsertFlag.Executed) == AppCompatCache.InsertFlag.Executed)
+                            ce1.Flag = AppCompatCache.Execute.Executed;
+                        else
+                            ce1.Flag = AppCompatCache.Execute.Unknown;
+                        
+                        ce1.EntryPosition = position;
+                        ce1.ControlSet = controlSet;
+                        Entries.Add(ce1);
                         position += 1;
 
-                        if (Entries.Count == cacheItems)
-                        {
+                        if (Entries.Count == EntryCount)
                             break;
-                        }
                     }
                     catch (Exception ex)
                     {
                         //TODO Report this
                         //take what we can get
                         Console.Error.WriteLine($"Error parsing cache entry. Position: {position} Index: {index}, Error: {ex.Message} ");
+                        if (Entries.Count < EntryCount)
+                            throw;
                         break;
                     }
                 }
@@ -149,5 +161,7 @@ namespace AppCompatCache
         }
 
         public List<CacheEntry> Entries { get; }
+        public int EntryCount { get; }
+        public int ControlSet { get; }
     }
 }

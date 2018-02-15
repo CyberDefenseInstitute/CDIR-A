@@ -84,24 +84,6 @@ WHERE
     <DateModified>2017-08-17T19:22:39.257197+09:00</DateModified>
   </LPQuery>
   <LPQuery>
-    <QueryName>【Misc】PowerShell</QueryName>
-    <QueryDescription>ソース PowerShellのレコードを抽出する。</QueryDescription>
-    <QueryData>SELECT 
- TimeGenerated AS 日時,
- ComputerName AS コンピュータ名,
- EventLog AS ファイル名,
- *
-FROM 
- '[LOGFILEPATH]'
-WHERE
- SourceName='PowerShell'</QueryData>
-    <QueryID>52bd759d-760b-4763-ac07-0fa6f2bffb4d</QueryID>
-    <LogType>EVTLOG</LogType>
-    <QueryCategory>ALL</QueryCategory>
-    <IsFavorite>false</IsFavorite>
-    <DateModified>2016-01-05T10:18:01.7968916+09:00</DateModified>
-  </LPQuery>
-  <LPQuery>
     <QueryName>【Misc】ネットワーク共有</QueryName>
     <QueryDescription>ソース Microsoft-Windows-Security-Auditing、イベントID 5140のレコードを抽出する。デフォルトでは有効になっていないため出力されない可能性が高い。同ソース、イベントIDでも出力するフィールドの内容が異なるパターンがあることを確認しているため、レコードによっては正しく出力されない可能性がある。</QueryDescription>
     <QueryData>SELECT 
@@ -216,6 +198,57 @@ WHERE
     <QueryCategory>ALL</QueryCategory>
     <IsFavorite>false</IsFavorite>
     <DateModified>2016-01-12T15:28:40.084411+09:00</DateModified>
+  </LPQuery>
+  <LPQuery>
+    <QueryName>【PowerShell】プロバイダの開始</QueryName>
+    <QueryDescription>ソース PowerShell、イベントID600のレコードを抽出する。</QueryDescription>
+    <QueryData>SELECT 
+ TimeGenerated AS 日時,
+ ComputerName AS コンピュータ名,
+ EventLog AS ファイル名,
+ EventID,
+ EXTRACT_TOKEN(EXTRACT_TOKEN(TRIM(EXTRACT_TOKEN(Strings,2,'|')),1,'ProviderName='),0,'NewProviderState') AS ProviderName,
+ EXTRACT_TOKEN(EXTRACT_TOKEN(TRIM(EXTRACT_TOKEN(Strings,2,'|')),1,'NewProviderState='),0,'SequenceNumber') AS NewProviderState,
+ EXTRACT_TOKEN(EXTRACT_TOKEN(TRIM(EXTRACT_TOKEN(Strings,2,'|')),1,'SequenceNumber='),0,'HostName') AS SequenceNumber,
+ EXTRACT_TOKEN(EXTRACT_TOKEN(TRIM(EXTRACT_TOKEN(Strings,2,'|')),1,'HostName='),0,'HostVersion') AS HostName,
+ EXTRACT_TOKEN(EXTRACT_TOKEN(TRIM(EXTRACT_TOKEN(Strings,2,'|')),1,'HostVersion='),0,'HostId') AS HostVersion,
+ EXTRACT_TOKEN(EXTRACT_TOKEN(TRIM(EXTRACT_TOKEN(Strings,2,'|')),1,'HostId='),0,'HostApplication') AS HostId,
+ EXTRACT_TOKEN(EXTRACT_TOKEN(TRIM(EXTRACT_TOKEN(Strings,2,'|')),1,'HostApplication='),0,'EngineVersion') AS HostApplication,
+ EXTRACT_TOKEN(EXTRACT_TOKEN(TRIM(EXTRACT_TOKEN(Strings,2,'|')),1,'EngineVersion='),0,'RunspaceId') AS EngineVersion,
+ EXTRACT_TOKEN(EXTRACT_TOKEN(TRIM(EXTRACT_TOKEN(Strings,2,'|')),1,'RunspaceId='),0,'PipelineId') AS RunspaceId,
+ EXTRACT_TOKEN(EXTRACT_TOKEN(TRIM(EXTRACT_TOKEN(Strings,2,'|')),1,'PipelineId='),0,'CommandName') AS PipelineId,
+ EXTRACT_TOKEN(EXTRACT_TOKEN(TRIM(EXTRACT_TOKEN(Strings,2,'|')),1,'CommandName='),0,'CommandType') AS CommandName,
+ EXTRACT_TOKEN(EXTRACT_TOKEN(TRIM(EXTRACT_TOKEN(Strings,2,'|')),1,'CommandType='),0,'ScriptName') AS CommandType,
+ EXTRACT_TOKEN(EXTRACT_TOKEN(TRIM(EXTRACT_TOKEN(Strings,2,'|')),1,'ScriptName='),0,'CommandPath') AS ScriptName,
+ EXTRACT_TOKEN(EXTRACT_TOKEN(TRIM(EXTRACT_TOKEN(Strings,2,'|')),1,'CommandPath='),0,'CommandLine') AS CommandPath,
+ EXTRACT_TOKEN(TRIM(EXTRACT_TOKEN(Strings,2,'|')),1,'CommandLine=') AS CommandLine
+FROM 
+ '[LOGFILEPATH]'
+WHERE
+ SourceName='PowerShell' AND EventID = 600</QueryData>
+    <QueryID>af476ef8-a75b-46d3-980f-e41576c36429</QueryID>
+    <LogType>EVTLOG</LogType>
+    <QueryCategory>ALL</QueryCategory>
+    <IsFavorite>false</IsFavorite>
+    <DateModified>2017-08-19T18:18:19.0693969+09:00</DateModified>
+  </LPQuery>
+  <LPQuery>
+    <QueryName>【PowerShell】全レコード</QueryName>
+    <QueryDescription>ソース PowerShellとMicrosoft-Windows-PowerShellのレコードを抽出する。</QueryDescription>
+    <QueryData>SELECT 
+ TimeGenerated AS 日時,
+ ComputerName AS コンピュータ名,
+ EventLog AS ファイル名,
+ *
+FROM 
+ '[LOGFILEPATH]'
+WHERE
+ SourceName='PowerShell' OR SourceName = 'Microsoft-Windows-PowerShell'</QueryData>
+    <QueryID>6f51d1b1-264d-4209-8b1d-e151c3832c99</QueryID>
+    <LogType>EVTLOG</LogType>
+    <QueryCategory>ALL</QueryCategory>
+    <IsFavorite>false</IsFavorite>
+    <DateModified>2017-08-19T18:14:54.2776469+09:00</DateModified>
   </LPQuery>
   <LPQuery>
     <QueryName>【RDP】リモートデスクトップユーザ認証</QueryName>
