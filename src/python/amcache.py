@@ -348,19 +348,23 @@ def mergeRegistoryInfomation(inventoryapp, inventoryfile):
 
 def parseHive(file, outputdirectory, args, count):
     r = Registry.Registry(file)
-    is_oldstyle = False
+    oldstyle = False
+    newstyle = False
+    entries = []
+    entries_app = []
+    entries_file = []
 
     # for old hive construction
     try:
         entries = parse_execution_entries(r, "Root\\File", FIELDS)
     except NotAnAmcacheHive:
-        g_logger.error("Doesn't appear to be an Amcache.hve hive")
-        return
+        g_logger.info("Root\\File key not found")
+        pass
 
     if len(entries) is not 0:
         with open(os.path.join(outputdirectory,"amcache_output.csv"), "a") as pf:
             standardOutput(entries, args, file, pf, count, FIELDS)
-        is_oldstyle = True
+        oldstyle = True
 
     # for new windows10 hive construction
     try:
@@ -368,13 +372,16 @@ def parseHive(file, outputdirectory, args, count):
         entries_file = parse_execution_entries(r, "Root\\InventoryApplicationFile", FIELDS_INVENTORY_FILE)
         entries_update1709 = mergeRegistoryInfomation(entries_app, entries_file)
     except NotAnAmcacheHive:
-        if not is_oldstyle:
-            g_logger.error("Doesn't appear to be an Amcache.hve hive")
-        return
+        g_logger.info("Root\\InventoryApplication or Root\\InventoryApplicationFile  key not found")
+        pass
 
     if len(entries_app) is not 0 and len(entries_file) is not 0:
         with open(os.path.join(outputdirectory,"amcache_inventory_output.csv"), "a") as pf:
             standardOutput(entries_update1709, args, file, pf, count, FIELDS_UPDATE1709)
+        newstyle = True
+
+    return { "old": oldstyle, "new": newstyle }
+
 
 def main(argv=None):
     if argv is None:
@@ -406,12 +413,15 @@ def main(argv=None):
     hivefiles = searchHiveFiles(inputdirectory)
     for file in hivefiles:
         count = hivefiles.index(file)
-        parseHive(file, outputdirectory, args, count)
+        result = parseHive(file, outputdirectory, args, count)
     if len(hivefiles) <= 0:
         print "Doesn't exist Amcache.hve files"
         sys.exit(1)
     else:
-        print "Saved: %s\\amcache_output.csv" % outputdirectory
+        if result["old"]:
+            print "Saved: %s\\amcache_output.csv" % outputdirectory
+        if result["new"]:
+            print "Saved: %s\\amcache_inventory_output.csv" % outputdirectory
 
 if __name__ == "__main__":
     main(argv=sys.argv)

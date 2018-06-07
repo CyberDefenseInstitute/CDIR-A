@@ -1,5 +1,5 @@
 CC := g++
-CFLAGS := -std=gnu++11 -O3 -static
+CFLAGS := -std=gnu++1z -O3 -static
 INCLUDE := -I./include/
 LIBS := lib/*.cpp
 SRCS := src/*.cpp

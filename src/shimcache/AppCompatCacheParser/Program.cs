@@ -29,7 +29,7 @@ namespace AppCompatCacheParser
             Console.WriteLine(@"shimcache.exe version " + Assembly.GetExecutingAssembly().GetName().Version + "\r\n"
                 + "Cyber Defense Institute, Inc. A modified version of AppCompatCacheParser\r\n"
                 + "Usage: shimcache.exe -o|--output OUTPUTFOLDER INPUTFOLDER");
-            Environment.Exit(0);            
+            Environment.Exit(0);
         }
 
         private static void Main(string[] args)
@@ -86,6 +86,8 @@ namespace AppCompatCacheParser
             bool entryFlag = false;
             foreach (string fileName in Directory.GetFiles(inDir, "*", SearchOption.AllDirectories))
             {
+                if (fileName.EndsWith(".LOG") || fileName.EndsWith(".LOG1") || fileName.EndsWith(".LOG2"))
+                    continue;                  
                 DirectoryInfo parentFolder = Directory.GetParent(fileName);
                 if (outDir.Contains(parentFolder.ToString()))
                     continue;

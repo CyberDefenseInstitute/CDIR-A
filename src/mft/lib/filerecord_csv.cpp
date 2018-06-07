@@ -93,8 +93,9 @@ int FileRecord::ParseRecord_csv(void) {
   else
     printf("\"UTC\"\t");
   
-  // TODO: Owner
   printf("\"%u\"", csvrecord.owner);
+  printf("\t");
+  printf("\"%u\"", csvrecord.security);
   printf("\t");
 
   // Misc
@@ -176,6 +177,9 @@ int FileRecord::ParseAttr_csv(ATTR attr, unsigned char *content) {
     header_size = sizeof(ATTR_HEADER_RESIDENT);
     content_size = attr.header.base.attr_len - sizeof(ATTR_HEADER_RESIDENT);
   }
+  
+  // To clean filesize parameter
+  csvrecord.filesize = 0;
 
   switch(attrid) {
     case ATTRTYPEID_STANDARD_INFORMATION:
@@ -184,6 +188,8 @@ int FileRecord::ParseAttr_csv(ATTR attr, unsigned char *content) {
       csvrecord.modified = attr.content.standard_information.file_altered_time;
       csvrecord.recordchanged = attr.content.standard_information.mft_altered_time;
       csvrecord.accessed = attr.content.standard_information.file_accessed_time;
+	  csvrecord.owner = attr.content.standard_information.owner_id;
+	  csvrecord.security = attr.content.standard_information.security_id;
       break;
 
     case ATTRTYPEID_ATTRIBUTE_LIST:

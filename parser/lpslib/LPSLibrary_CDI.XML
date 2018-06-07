@@ -312,18 +312,24 @@ WHERE
  EventLog AS ファイル名,
  EXTRACT_TOKEN(Strings,0,'|') AS アカウント,
  EXTRACT_TOKEN(Strings,1,'|') AS セッション,
- EXTRACT_TOKEN(Strings,2,'|') AS IPアドレス
+ EXTRACT_TOKEN(Strings,2,'|') AS IPアドレス,
+ CASE EventID
+  WHEN 21 THEN 'ログオン成功'
+　WHEN 22 THEN 'シェル開始通知'
+　WHEN 23 THEN 'ログオフ成功'
+　WHEN 24 THEN 'セッション切断'
+　WHEN 25 THEN '再接続成功'
+ END AS 内容
 FROM
  '[LOGFILEPATH]'
 WHERE
  SourceName = 'Microsoft-Windows-TerminalServices-LocalSessionManager' AND
-　(EventID = 21 OR EventID = 23 OR EventID = 24 OR EventID = 25)
-</QueryData>
+　(EventID = 21 OR EventID = 23 OR EventID = 24 OR EventID = 25)</QueryData>
     <QueryID>5044f5f6-e9d4-4ce9-8dd4-6d1436404cf1</QueryID>
     <LogType>EVTLOG</LogType>
     <QueryCategory>EVT</QueryCategory>
     <IsFavorite>false</IsFavorite>
-    <DateModified>2017-07-03T09:31:04.204718+09:00</DateModified>
+    <DateModified>2018-03-02T10:22:41.9754409+09:00</DateModified>
   </LPQuery>
   <LPQuery>
     <QueryName>【アカウント】ユーザ作成　</QueryName>

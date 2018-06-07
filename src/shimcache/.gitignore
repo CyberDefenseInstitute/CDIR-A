@@ -188,3 +188,5 @@ FakesAssemblies/
 GeneratedArtifacts/
 _Pvt_Extensions/
 ModelManifest.xml
+/.vs/AppCompatCacheParser/v15/Server/sqlite3/
+/.vs/AppCompatCacheParser/v15/sqlite3/

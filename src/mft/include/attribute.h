@@ -45,7 +45,7 @@ struct ATTR_STANDARD_INFORMATION {
   uint64_t file_altered_time;
   uint64_t mft_altered_time;
   uint64_t file_accessed_time;
-  uint64_t flags;
+  uint32_t flags;
   uint32_t max_version;
   uint32_t version;
   uint32_t class_id;

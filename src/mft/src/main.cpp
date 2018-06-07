@@ -9,6 +9,7 @@
 
 #include "mft.h"
 #include "attribute.h"
+#include "utils.h"
 
 using namespace std;
 
@@ -27,11 +28,11 @@ int tz_hour, tz_min; // time zone info
 string computername; // extract from input full path
   
 void usage(void) {
-	printf("Usage: mft.exe -o output [--utc] [-e|--export] input\n");
+	printf("Usage: mft.exe [-o output] [--utc] [-e|--export] input\n");
 }
 
-void dump(char *fname) {
-  MFT mft = MFT(fname);
+void dump(char *inname) {
+  MFT mft = MFT(inname);
 
   for(uint32_t record_num:mft.record_nums) {
       FileRecord *fr;
@@ -42,14 +43,20 @@ void dump(char *fname) {
   }
 }
 
-std::string extractcomputername(char *fname) {
+std::string extractcomputername(char *inname) {
   std::string fullpath, folderpath, foldername;
-  fullpath = fname;
+  string ntfs = "\\NTFS";
+  fullpath = inname;
   std::string::size_type pos;
+
   // trail filename
   if((pos = fullpath.find_last_of(SEP)) == string::npos)
     return ".";
   folderpath = fullpath.substr(0, pos);
+  // trail NTFS folder
+  if(folderpath.length() <= ntfs.length() || (pos = folderpath.find(ntfs, folderpath.length() - ntfs.length())) == std::string::npos)
+    return ".";
+  folderpath = folderpath.substr(0, pos);
   // extract foldername
   if((pos = folderpath.find_last_of(SEP)) == string::npos)
     return ".";
@@ -62,10 +69,10 @@ std::string extractcomputername(char *fname) {
   return foldername.substr(0, pos);
 }
 
-void dumpcsv(char *fname) {
-  MFT mft = MFT(fname);
+void dumpcsv(char *inname) {
+  MFT mft = MFT(inname);
 
-  computername = extractcomputername(fname);
+  computername = extractcomputername(inname);
   
   if(header==true) {
     // output CSV headers
@@ -101,6 +108,8 @@ void dumpcsv(char *fname) {
     printf("\t");
     printf("\"Owner\"");
     printf("\t");
+    printf("\"Security\"");
+    printf("\t");
     printf("\"Misc\"");
     printf("\n");
   }
@@ -114,11 +123,11 @@ void dumpcsv(char *fname) {
   }
 }
 
-char* supplyinput(char *fname) {
+char* supplyinput(char *inname) {
   std::string inputname;
   std::string::size_type pos;  
 
-  inputname = fname;
+  inputname = inname;
   
   if(inputname[inputname.length()-1] == SEP)
     inputname += "$MFT";
@@ -130,7 +139,6 @@ char* supplyinput(char *fname) {
     }
   }
   
-
   char* inputname_cstr = new char[inputname.size() + 1];
   std::char_traits<char>::copy(inputname_cstr, inputname.c_str(), inputname.size() + 1);  
   return inputname_cstr;
@@ -138,11 +146,14 @@ char* supplyinput(char *fname) {
 
 int main(int argc, char **argv) {
     
-  char *fname = NULL;
-  char *dirname = NULL;
-  char *inputname;
+  char *inname = NULL;
+  char *outname = NULL;
+  const char *outdir;
+  string infilename, infullname, outfullname;
+
   bool dumpresident = false; // dump resident data
 
+  FILE* fp_out;
   int opt;
   int longindex;
   
@@ -159,7 +170,7 @@ int main(int argc, char **argv) {
     switch(opt) {
      
       case 'o':
-        dirname = optarg;
+        outname = optarg;
         break;
 
       case 'h':
@@ -180,22 +191,60 @@ int main(int argc, char **argv) {
    }
   }
   for (int i = optind; i < argc; i++)
-    fname = argv[i];
+    inname = argv[i];
 
-  if (!fname) {
+  if (!inname) {
     usage();
     exit(EXIT_FAILURE);
   }
 
-  if(dumpresident) { // output resident data
-    MFT mft = MFT(fname);
+  // input handling
+  if(isDir(inname)) {
+	infilename = findFile(inname, "$MFT");
+	if (infilename == "") {
+	  fprintf(stderr, "input file not found\n");
+	  return -1;
+	}
+	infullname = string(inname) + SEP + infilename;
+  } else if (isFile(inname)){
+ 	infullname = string(inname);
+	std::string::size_type pos = infullname.find_last_of(SEP);  
+	infilename = infullname.substr(pos+1, infullname.length()-pos);
+  } else {
+	fprintf(stderr, "error: no input\n");	
+	exit(EXIT_FAILURE);
+  }
+  fprintf(stdout, "input: %s\n", infullname.c_str());
 
-    if(dirname == NULL) {
-      usage();
+  // output handling
+  if(outname != NULL) {
+	if(isDir(outname)) {
+	  outfullname = string(outname) + SEP + infilename + "_output.csv";
+      outdir = outname;
+	}
+    else {
+	  outfullname = string(outname);
+	  std::string::size_type pos = outfullname.find_last_of(SEP);
+      outdir = outfullname.substr(0, pos-1).c_str();	
+	}
+    fprintf(stdout, "output: %s\n", outfullname.c_str());
+    fp_out = freopen(outfullname.c_str(),"a",stdout);
+  }	else
+	fprintf(stdout, "output: stdout\n");  
+
+  char* infullname_cstr = new char[infullname.size() + 1];
+  std::char_traits<char>::copy(infullname_cstr, infullname.c_str(), infullname.size() + 1);
+
+
+  if(dumpresident) { // output resident data
+    MFT mft = MFT(infullname_cstr);
+
+    if(outname == NULL) {
+      fprintf(stderr, "current version doesn't support dump option and stdout\n");  
       return -1;
     }
 
-    string cmd = "mkdir "+string(dirname)+SEP+"mft";
+    string cmd = "mkdir "+string(outdir)+SEP+"mft";
     if(system(cmd.c_str())) {
       fprintf(stderr, "failed to create directory\n");
       return -1;
@@ -218,12 +267,12 @@ int main(int argc, char **argv) {
 
       for(auto resi:fr->resident_data) {
         if(resi->name == NULL) { // file name
-          ofstream ofs(string(dirname)+SEP+"mft"+SEP+outfile);
+          ofstream ofs(string(outdir)+SEP+"mft"+SEP+outfile);
           ofs << resi->data;
           ofs.close();
         }
         else { // ADS
-          ofstream ofs(string(dirname)+SEP+"mft"+SEP+outfile+"_"+string(resi->name));
+          ofstream ofs(string(outdir)+SEP+"mft"+SEP+outfile+"_"+string(resi->name));
           ofs << resi->data;
           ofs.close();
         }
@@ -234,46 +283,27 @@ int main(int argc, char **argv) {
     return 0;
   }
 
-  inputname = supplyinput(fname);
+//  inputname = supplyinput(inname);
   
-  if (dirname != NULL) {
-    std::string oname = "mft_output.csv";
-    std::string opathname = string(dirname) + SEP + oname;
-    FILE* fp_out = freopen(opathname.c_str(),"a",stdout);
-  }
-
   // calc time zone
   if(lt) {
     time_t t1, t2;
-    time(&t1);
+    time(&t1); // LocalTime UNIX epoch
     struct tm *tm_info;
-
-    tm_info = localtime(&t1);
-    tz_hour = tm_info->tm_hour;
-    tz_min = tm_info->tm_min;	
+	int diff_sec;
 
     tm_info = gmtime(&t1);
-    tz_hour -= tm_info->tm_hour;
-    tz_min -= tm_info->tm_min;
-	t2 = mktime(tm_info);
-	
-	if(t1-t2 > 0 && tz_hour < 0)
-		tz_hour += 24;
-
-    if(tz_min < 0) {
-      tz_min += 60;
-      tz_hour--;
-    }
-
-	
-    if(tz_hour >= 0) {
+	t2 = mktime(tm_info); // UTC UNIX epoch
+	diff_sec = t1-t2;
+	tz_hour = diff_sec/3600;
+	tz_min = (diff_sec/60) % 60;
+	if(diff_sec >= 0)
       sprintf(tzstr, "+%02d:%02d", tz_hour, tz_min);
-    }
-    else {
-      sprintf(tzstr, "%02d:%02d", tz_hour, tz_min);
-    }
+    else // -hh:mm
+      sprintf(tzstr, "%03d:%02d", tz_hour, -tz_min);
+
   }
    
-  dumpcsv(inputname);
+  dumpcsv(infullname_cstr);
   return 0;
 }

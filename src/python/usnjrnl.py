@@ -91,13 +91,15 @@ flags = {
 
 def check_start_point(journal_pathname):
     current_offset = 0
-    if os.path.exists(os.path.join(out_dir,"usnjrnl_output.csv")):
+    filename = os.path.basename(journal_pathname)
+    filename = filename + "_output.csv"
+    if os.path.exists(os.path.join(out_dir,filename)):
         column_name_flag = False
     else:
         column_name_flag = True
 
     with open(journal_pathname, "rb") as journal_file:
-        with open(os.path.join(out_dir, "usnjrnl_output.csv"), "a") as output_file:
+        with open(os.path.join(out_dir, filename), "a") as output_file:
             if column_name_flag and not args.noheader:
                 csv.writer((output_file), delimiter="\t", lineterminator="\n", quoting=csv.QUOTE_ALL).writerow(row)
             while True:
@@ -187,15 +189,14 @@ if __name__ == '__main__':
     exists_flag = False
     for root, dirs, files in os.walk(in_dir):
         for filename in files:
-            if not re.match(r'\$UsnJrnl-\$J', filename):
+            if not re.search(r'\$UsnJrnl-\$J', filename):
                 continue
             exists_flag = True
             journal_pathname = os.path.join(root, filename)
             journal_filesize = os.path.getsize(journal_pathname)
             time_delta = utility().get_timezone_str()
             check_start_point(journal_pathname)
-    if exists_flag:
-        print "Saved: %s\\usnjrnl_output.csv" % out_dir
-    else:
-        print "Doesn't exist $UsnJrnl-$J files"
+            print "Saved: %s\\%s_output.csv" % (out_dir, filename)
+    if not exists_flag:
+        print "$UsnJrnl-$J not found"
         sys.exit(1)

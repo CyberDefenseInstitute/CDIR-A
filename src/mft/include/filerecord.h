@@ -59,7 +59,8 @@ struct CSVRecord {
   uint64_t modified_fn;
   uint64_t recordchanged_fn;
   uint64_t accessed_fn;
-  uint32_t owner; // TODO:
+  uint32_t owner;
+  uint32_t security;
   string misc;
   int ns_tmp; // for calc: which FILE_NAME to take
 };

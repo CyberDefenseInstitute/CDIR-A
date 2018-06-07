@@ -7,12 +7,91 @@
 #include <ctype.h>
 #include <ctime>
 #include <unistd.h>
+#include <sys/stat.h>
+#include <dirent.h> // opendir, readdir, closedir
 
 #ifndef HEXDUMP_COLS
 #define HEXDUMP_COLS 8
 #endif
 
 #define HEXDUMP_OUT stdout
+
+bool isDir(const char *name){
+  struct stat s;
+  if(stat(name, &s) == 0) {
+	if( s.st_mode & S_IFDIR )
+	  return true;
+	else if( s.st_mode & S_IFREG )
+	  return false;
+	else {
+	  fprintf(stderr, "error: unknown object\n");			
+	  exit(EXIT_FAILURE);
+	}
+  } else
+	return false;
+}
+
+bool isFile(const char *name){
+  struct stat s;
+  if(stat(name, &s) == 0) {
+	if( s.st_mode & S_IFREG )
+	  return true;
+	else if( s.st_mode & S_IFDIR )
+	  return false;
+	else {
+	  fprintf(stderr, "error: unknown object\n");			
+	  exit(EXIT_FAILURE);
+	}
+  } else
+	return false;
+}
+
+string findFile(const char *dirname, const char *filename){
+  DIR *dir;
+  struct dirent *dp;
+  string tmpname;
+  string searchname = filename;
+  std::string::size_type pos;
+
+  dir = opendir(dirname);
+  if (dir == NULL)
+	return "";
+
+  dp = readdir(dir);
+    while (dp != NULL) {
+      tmpname = dp->d_name;
+	  if(tmpname.find(searchname, tmpname.length() - searchname.length()) != std::string::npos) {
+		closedir(dir);
+		return tmpname;
+	  }			
+      dp = readdir(dir);
+    }
+
+  if (dir != NULL)
+	closedir(dir);
+	
+  return "";	
+}
+
+// Check specified directory is empty
+bool is_empty_dir(const char *out_dname){
+  DIR *pdir;
+
+  if((pdir = opendir(out_dname)) == NULL)
+    return false;
+
+  struct dirent *pent;
+
+  // check there is at least one file
+  for(pent = readdir(pdir); pent != NULL; pent = readdir(pdir)) {
+    if(strcmp(pent->d_name, ".") != 0 && strcmp(pent->d_name, "..") != 0) {// ignore "." and ".."
+      closedir(pdir);
+      return false;
+    }
+  }
+  closedir(pdir);
+  return true;
+}
 
 void hexdump(void *mem, unsigned int len)
 {
@@ -68,6 +147,12 @@ void parse_time(uint64_t _time, bool lt) {
   time_t epoch = _time/(10*1000*1000) - 11644473600L;
   int miliseconds = (_time%(10*1000*1000))/(1000*10);
   struct tm *tm_info;
+
+  // check range and print raw value if invalid
+  if (epoch > 32503680000ULL) { // 3000/01/01 00:00:00
+    printf("\"%llu\"", _time);
+    return;
+  }
 
   if(lt)
       tm_info = localtime(&epoch);

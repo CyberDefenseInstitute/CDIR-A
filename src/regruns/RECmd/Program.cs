@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Registry;
+using Microsoft.Win32;
 using Registry.Abstractions;
 using Registry.Other;
 using CsvHelper;
 using CsvHelper.Configuration;
-
+using RegistryHive = Registry.RegistryHive;
+using RegistryKey = Registry.Abstractions.RegistryKey;
 namespace RECmd
 {
     internal class Program
@@ -16,11 +17,13 @@ namespace RECmd
 
         private static bool CheckForDotnet46()
         {
-            using (var ndpKey = Microsoft.Win32.RegistryKey.OpenBaseKey(Microsoft.Win32.RegistryHive.LocalMachine, Microsoft.Win32.RegistryView.Registry32).OpenSubKey("SOFTWARE\\Microsoft\\NET Framework Setup\\NDP\\v4\\Full\\"))
+            using (var ndpKey = Microsoft.Win32.RegistryKey
+                .OpenBaseKey(Microsoft.Win32.RegistryHive.LocalMachine, Microsoft.Win32.RegistryView.Registry32)
+                .OpenSubKey("SOFTWARE\\Microsoft\\NET Framework Setup\\NDP\\v4\\Full\\"))
             {
-                int releaseKey = Convert.ToInt32(ndpKey.GetValue("Release"));
+                var releaseKey = Convert.ToInt32(ndpKey.GetValue("Release"));
 
-                return (releaseKey >= 393295);
+                return releaseKey >= 393295;
             }
         }
 
@@ -86,17 +89,17 @@ namespace RECmd
                     if (br.ReadInt32() != 1718052210) // means not "regf"
                         continue;
 
-                    if (Path.GetFileName(fileName).ToUpper().Contains("SYSTEM"))
+                    if (Path.GetFileName(fileName).ToUpper().EndsWith("SYSTEM"))
                     {
                         systemHives.Add(fileName);
                         hiveFlag = true;
                     }
-                    else if (Path.GetFileName(fileName).ToUpper().Contains("SOFTWARE"))
+                    else if (Path.GetFileName(fileName).ToUpper().EndsWith("SOFTWARE"))
                     {
                         softwareHives.Add(fileName);
                         hiveFlag = true;
                     }
-                    else if (Path.GetFileName(fileName).ToUpper().Contains("NTUSER.DAT"))
+                    else if (Path.GetFileName(fileName).ToUpper().EndsWith("NTUSER.DAT"))
                     {
                         ntuserHives.Add(fileName);
                         hiveFlag = true;
@@ -110,12 +113,12 @@ namespace RECmd
             }
 
             var outFileName = Path.Combine(outDir, outFileBase);
-            var sw = new StreamWriter(outFileName, true, System.Text.Encoding.UTF8);
+            var sw = new StreamWriter(outFileName, true, new System.Text.UTF8Encoding(false));
             sw.AutoFlush = true;
             var csv = new CsvWriter(sw);
             csv.Configuration.RegisterClassMap<CacheOutputMap>();
             csv.Configuration.Delimiter = "\t";
-            csv.Configuration.Encoding = System.Text.Encoding.UTF8;
+            csv.Configuration.Encoding = new System.Text.UTF8Encoding(false);
             csv.Configuration.IgnoreQuotes = false;
             csv.Configuration.Quote = '"';
             csv.Configuration.QuoteAllFields = true;
@@ -133,8 +136,23 @@ namespace RECmd
             foreach (var systemHive in systemHives)
             {
 
-//                var reg = new RegistryHive(systemHive);
-                var reg = new RegistryHiveOnDemand(systemHive);
+                var reg = new RegistryHive(systemHive);
+//                var reg = new RegistryHiveOnDemand(systemHive);
+
+                if (reg.Header.PrimarySequenceNumber != reg.Header.SecondarySequenceNumber)
+                {
+                    var logFiles = Directory.GetFiles(Path.GetDirectoryName(systemHive), Path.GetFileName(systemHive)+".LOG*");
+
+                    if (logFiles.Length == 0)
+                    {
+                        Console.WriteLine("Registry hive is dirty and no transaction logs were found in the same directory! Skip!!");
+                        continue;
+                    }
+
+                    reg.ProcessTransactionLogs(logFiles.ToList(), true);
+                }
+
+                reg.ParseHive();
 
                 var subKey = reg.GetKey("Select");
                 if (subKey == null)
@@ -171,8 +189,23 @@ namespace RECmd
             // SOFTWARE
             foreach (var softwareHive in softwareHives)
             {
-//                var reg = new RegistryHive(softwareHive);
-                var reg = new RegistryHiveOnDemand(softwareHive);
+                var reg = new RegistryHive(softwareHive);
+//                var reg = new RegistryHiveOnDemand(softwareHive);
+
+                if (reg.Header.PrimarySequenceNumber != reg.Header.SecondarySequenceNumber)
+                {
+                    var logFiles = Directory.GetFiles(Path.GetDirectoryName(softwareHive), Path.GetFileName(softwareHive)+".LOG*");
+
+                    if (logFiles.Length == 0)
+                    {
+                        Console.WriteLine("Registry hive is dirty and no transaction logs were found in the same directory! Skip!!");
+                        continue;
+                    }
+
+                    reg.ProcessTransactionLogs(logFiles.ToList(), true);
+                }
+
+                reg.ParseHive();
 
                 StreamReader cReader = new StreamReader(Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "software.txt"), System.Text.Encoding.Default);
 
@@ -203,9 +236,23 @@ namespace RECmd
             // NTUSER.dat
             foreach (var ntuserHive in ntuserHives)
             {
-//                var reg = new RegistryHive(ntuserHive);
-                var reg = new RegistryHiveOnDemand(ntuserHive);
+                var reg = new RegistryHive(ntuserHive);
+//                var reg = new RegistryHiveOnDemand(ntuserHive);
 
+                if (reg.Header.PrimarySequenceNumber != reg.Header.SecondarySequenceNumber)
+                {
+                    var logFiles = Directory.GetFiles(Path.GetDirectoryName(ntuserHive), Path.GetFileName(ntuserHive) +".LOG*");
+
+                    if (logFiles.Length == 0)
+                    {
+                        Console.WriteLine("Registry hive is dirty and no transaction logs were found in the same directory! Skip!!");
+                        continue;
+                    }
+
+                    reg.ProcessTransactionLogs(logFiles.ToList(), true);
+                }
+
+                reg.ParseHive();
                 StreamReader cReader = new StreamReader(Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "ntuser.txt"), System.Text.Encoding.Default);
 
                 // read key by line

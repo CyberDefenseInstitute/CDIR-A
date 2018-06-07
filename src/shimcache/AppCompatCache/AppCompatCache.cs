@@ -69,7 +69,25 @@ namespace AppCompatCache
 
             var controlSetIds = new List<int>();
 
-            var hive = new RegistryHiveOnDemand(filename);
+//            var hive = new RegistryHiveOnDemand(filename);
+            var hive = new RegistryHive(filename);
+
+            if (hive.Header.PrimarySequenceNumber != hive.Header.SecondarySequenceNumber)
+            {
+                var logFiles = Directory.GetFiles(Path.GetDirectoryName(filename), Path.GetFileName(filename) + ".LOG*");
+
+                if (logFiles.Length == 0)
+                {
+                    Console.WriteLine("Registry hive is dirty and no transaction logs were found in the same directory! Skip!!");
+                    return;
+                }
+
+                hive.ProcessTransactionLogs(logFiles.ToList(), true);
+            }
+
+            hive.ParseHive();
+
+
             RegistryKey subKey = hive.GetKey("Select");
             var ControlSet = int.Parse(subKey.Values.Single(c => c.ValueName == "Current").ValueData);
 //            ControlSet = controlSet;

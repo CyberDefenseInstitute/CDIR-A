@@ -20,7 +20,7 @@ class utility(object):
     def get_computer_name(self, path):
         split_path = path.split(os.sep)
         for dir in reversed(split_path):
-            if not dir or dir == split_path[-1] or re.match(r'Registry|Prefetch', dir):
+            if not dir or dir == split_path[-1] or re.match(r'NTFS|Registry|Prefetch', dir):
                 continue
             else:
                 parent_folder_name = dir
