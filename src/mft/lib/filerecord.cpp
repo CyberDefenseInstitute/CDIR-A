@@ -396,12 +396,18 @@ string FileRecord::getFileName(uint64_t ref) {
     fr.ParseRecord(false);
   }
 
-  // avoid self recursion
-  if(ref == mft->ref_table[ref]) {
+  if ( mft->ref_table.find(ref) != mft->ref_table.end()) {
+    // avoid self recursion
+    if(ref == mft->ref_table[ref]) {
+      return res;
+    }
+
+    res = getFileName(mft->ref_table[ref]);
+    res += "\\" + filename[ref];
+    return res;
+  } else {
+    res = "unknown";
     return res;
   }
-
-  res = getFileName(mft->ref_table[ref]);
-  res += "\\" + filename[ref];
-  return res;
+	
 }

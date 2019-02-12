@@ -74,19 +74,20 @@ namespace AppCompatCache
 
             if (hive.Header.PrimarySequenceNumber != hive.Header.SecondarySequenceNumber)
             {
-                var logFiles = Directory.GetFiles(Path.GetDirectoryName(filename), Path.GetFileName(filename) + ".LOG*");
+                var hiveBase = Path.GetFileName(filename);
+                var dirname = Path.GetDirectoryName(filename);
+                if (string.IsNullOrEmpty(dirname))
+                    dirname = ".";
+
+                var logFiles = Directory.GetFiles(dirname, $"{hiveBase}.LOG?");
 
                 if (logFiles.Length == 0)
-                {
-                    Console.WriteLine("Registry hive is dirty and no transaction logs were found in the same directory! Skip!!");
-                    return;
-                }
-
-                hive.ProcessTransactionLogs(logFiles.ToList(), true);
+                    Console.WriteLine("Registry hive is dirty and no transaction logs were found. Try to parse without logs.");
+                else
+                    hive.ProcessTransactionLogs(logFiles.ToList(), true);
             }
 
             hive.ParseHive();
-
 
             RegistryKey subKey = hive.GetKey("Select");
             var ControlSet = int.Parse(subKey.Values.Single(c => c.ValueName == "Current").ValueData);

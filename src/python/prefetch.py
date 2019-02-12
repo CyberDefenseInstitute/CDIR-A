@@ -328,19 +328,26 @@ def parsepf(root, pf, filename, header_version, fileindex):
 
     while current_offset < filename_list_end_offset:
         # search NULL(boundary) in filename list
-        if utility().hextoint(pf.read(2)) == 0:
-            pf.seek(current_offset)
-            filename_hex = binascii.hexlify(pf.read(filename_length))
-            filename_uni_str = codecs.decode(filename_hex, 'hex_codec').decode('utf-16')
-            filename_utf_str = filename_uni_str.encode('utf-8')
-            if exename_utf_str in filename_utf_str:
-                exename_list.append(filename_utf_str)
-            output_list.append(filename_utf_str)
-            current_offset = current_offset + filename_length + 2
-            pf.seek(current_offset)
-            filename_length = 0
+        read = pf.read(2)
+        if len(read) == 0:
+            # Unexpected end of prefetch file. This file is damaged in the middle.
+            prefetch_file_list = refine_prefetch_list(utility().get_computer_name(root), filename, output_list)
+            write_output_file("prefetch_list_output.csv", prefetch_file_list, fileindex)
+            return
         else:
-            filename_length += 2
+            if utility().hextoint(read) == 0:
+                pf.seek(current_offset)
+                filename_hex = binascii.hexlify(pf.read(filename_length))
+                filename_uni_str = codecs.decode(filename_hex, 'hex_codec').decode('utf-16')
+                filename_utf_str = filename_uni_str.encode('utf-8')
+                if exename_utf_str in filename_utf_str:
+                    exename_list.append(filename_utf_str)
+                output_list.append(filename_utf_str)
+                current_offset = current_offset + filename_length + 2
+                pf.seek(current_offset)
+                filename_length = 0
+            else:
+                filename_length += 2
 
     # time zone
     prefetch_record_field[prefetch_column_order["time_zone"][1]] = \

@@ -30,7 +30,7 @@ namespace RECmd
         private static void Help()
         {
             Console.WriteLine(@"regruns.exe version " + Assembly.GetExecutingAssembly().GetName().Version + "\r\n"
-                +"Cyber Defense Institute, Inc. A modified version of RECmd\r\n"
+                + "Cyber Defense Institute, Inc. A modified version of RECmd\r\n"
                 + "Usage: regruns.exe -o|--output OUTPUTFOLDER INPUTFOLDER");
             Environment.Exit(0);
         }
@@ -114,6 +114,7 @@ namespace RECmd
 
             var outFileName = Path.Combine(outDir, outFileBase);
             var sw = new StreamWriter(outFileName, true, new System.Text.UTF8Encoding(false));
+
             sw.AutoFlush = true;
             var csv = new CsvWriter(sw);
             csv.Configuration.RegisterClassMap<CacheOutputMap>();
@@ -141,15 +142,15 @@ namespace RECmd
 
                 if (reg.Header.PrimarySequenceNumber != reg.Header.SecondarySequenceNumber)
                 {
-                    var logFiles = Directory.GetFiles(Path.GetDirectoryName(systemHive), Path.GetFileName(systemHive)+".LOG*");
+                    var hiveBase = Path.GetFileName(systemHive);
+                    var logFiles = Directory.GetFiles(Path.GetDirectoryName(systemHive), $"{hiveBase}.LOG*");
+
+//                    var logFiles = Directory.GetFiles(Path.GetDirectoryName(systemHive), Path.GetFileName(systemHive)+".LOG*");
 
                     if (logFiles.Length == 0)
-                    {
-                        Console.WriteLine("Registry hive is dirty and no transaction logs were found in the same directory! Skip!!");
-                        continue;
-                    }
-
-                    reg.ProcessTransactionLogs(logFiles.ToList(), true);
+                        Console.WriteLine("Registry hive is dirty and no transaction logs were found. Try to parse without logs.");
+                    else
+                        reg.ProcessTransactionLogs(logFiles.ToList(), true);
                 }
 
                 reg.ParseHive();
@@ -197,12 +198,9 @@ namespace RECmd
                     var logFiles = Directory.GetFiles(Path.GetDirectoryName(softwareHive), Path.GetFileName(softwareHive)+".LOG*");
 
                     if (logFiles.Length == 0)
-                    {
-                        Console.WriteLine("Registry hive is dirty and no transaction logs were found in the same directory! Skip!!");
-                        continue;
-                    }
-
-                    reg.ProcessTransactionLogs(logFiles.ToList(), true);
+                        Console.WriteLine("Registry hive is dirty and no transaction logs were found. Try to parse without logs.");
+                    else
+                        reg.ProcessTransactionLogs(logFiles.ToList(), true);
                 }
 
                 reg.ParseHive();
@@ -244,12 +242,9 @@ namespace RECmd
                     var logFiles = Directory.GetFiles(Path.GetDirectoryName(ntuserHive), Path.GetFileName(ntuserHive) +".LOG*");
 
                     if (logFiles.Length == 0)
-                    {
-                        Console.WriteLine("Registry hive is dirty and no transaction logs were found in the same directory! Skip!!");
-                        continue;
-                    }
-
-                    reg.ProcessTransactionLogs(logFiles.ToList(), true);
+                        Console.WriteLine("Registry hive is dirty and no transaction logs were found. Try to parse without logs.");
+                    else
+                        reg.ProcessTransactionLogs(logFiles.ToList(), true);
                 }
 
                 reg.ParseHive();

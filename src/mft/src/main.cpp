@@ -149,7 +149,7 @@ int main(int argc, char **argv) {
   char *inname = NULL;
   char *outname = NULL;
   const char *outdir;
-  string infilename, infullname, outfullname;
+  string infilename, inntfsname, infullname, outfullname;
 
   bool dumpresident = false; // dump resident data
 
@@ -202,10 +202,23 @@ int main(int argc, char **argv) {
   if(isDir(inname)) {
 	infilename = findFile(inname, "$MFT");
 	if (infilename == "") {
-	  fprintf(stderr, "input file not found\n");
-	  return -1;
+		if (inname[string(inname).size()-1] == '\\')
+			inntfsname = string(inname) + "NTFS";
+		else
+			inntfsname = string(inname) + SEP + "NTFS";
+		const char* inntfs = inntfsname.c_str();		
+		infilename = findFile(inntfs, "$MFT");
+		if (infilename == "") {
+			fprintf(stderr, "input file not found\n");
+			return -1;
+		}
+		infullname = inntfsname + SEP + infilename;
+	} else {
+		if (inname[string(inname).size()-1] == '\\')
+			infullname = string(inname) + infilename;
+		else
+			infullname = string(inname) + SEP + infilename;
 	}
-	infullname = string(inname) + SEP + infilename;
   } else if (isFile(inname)){
  	infullname = string(inname);
 	std::string::size_type pos = infullname.find_last_of(SEP);  

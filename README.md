@@ -6,9 +6,17 @@ cdir-analyzer (parser)はcdir-collectorで収集したデータのパーサ群�
 
 ## 内容
 
+* browsinghistoryview-x64
+  * BrowsingHistoryView.exe - Webブラウザ履歴のパーサ
 * lpslib
   * LPSLibrary_CDI.XML - Log Parser Studio用のライブラリ
   * evtx_イベントID.sql - 特定のイベントIDのログを抽出するクエリ
+* networkusageview-x64
+  * NetworkUsageView.exe - SRUM(SRUDB.dat)のパーサ
+* PyWMIPersistenceFinder
+  * PyWMIPersistenceFinder.exe - WMI(OBJECTS.DATA)のパーサ
+* Secure2Csv64
+  * Secure2Csv64.exe - $SECUREのパーサ
 * amcache.exe - Amcacheのパーサ
 * mft.exe - MFTのパーサ
 * ntuser.txt - regruns.exeで読み込むリストファイル
@@ -20,6 +28,24 @@ cdir-analyzer (parser)はcdir-collectorで収集したデータのパーサ群�
 * usnjrnl.exe - UsnJrnlのパーサ
 
 ## 使い方
+
+### BrowsingHistoryView.exe
+
+https://www.nirsoft.net/utils/browsing_history_view.html を参照してください。
+
+### NetworkUsageView.exe
+
+https://www.nirsoft.net/utils/network_usage_view.html を参照してください。
+
+### PyWMIPersistenceFinder.exe
+
+https://github.com/davidpany/WMI_Forensics を参照してください。
+
+### Secure2Csv64
+
+https://github.com/jschicht/Secure2Csv を参照してください。
+
+### その他のパーサ
 
 コマンドプロンプト上で以下の形式で実行します。
 

@@ -120,6 +120,9 @@ int FileRecord::ParseAttrs_csv(unsigned char *p) {
   char16_t *fname;
   uint8_t fname_len;
 
+  // To clean filesize parameter
+  csvrecord.filesize = 0;
+
   for(tmp = p; ; tmp += attr.header.base.attr_len) {
     if(!memcmp(tmp, END_OF_ATTR, 4)) break;
     memcpy(&attr, tmp, sizeof(ATTR_HEADER_BASE));
@@ -178,8 +181,6 @@ int FileRecord::ParseAttr_csv(ATTR attr, unsigned char *content) {
     content_size = attr.header.base.attr_len - sizeof(ATTR_HEADER_RESIDENT);
   }
   
-  // To clean filesize parameter
-  csvrecord.filesize = 0;
 
   switch(attrid) {
     case ATTRTYPEID_STANDARD_INFORMATION:

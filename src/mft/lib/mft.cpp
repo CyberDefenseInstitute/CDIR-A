@@ -52,8 +52,6 @@ int MFT::parse(uint32_t num, FileRecord* fr, bool dump) {
     return -1;
   }
 
-  fr = new FileRecord(this, record_table[num]);
-
   if(fr->ParseRecord(dump)) {
     return -1;
   }

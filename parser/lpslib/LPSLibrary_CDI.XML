@@ -312,24 +312,25 @@ WHERE
  EventLog AS ファイル名,
  EXTRACT_TOKEN(Strings,0,'|') AS アカウント,
  EXTRACT_TOKEN(Strings,1,'|') AS セッション,
- EXTRACT_TOKEN(Strings,2,'|') AS IPアドレス,
  CASE EventID
   WHEN 21 THEN 'ログオン成功'
 　WHEN 22 THEN 'シェル開始通知'
 　WHEN 23 THEN 'ログオフ成功'
 　WHEN 24 THEN 'セッション切断'
 　WHEN 25 THEN '再接続成功'
- END AS 内容
+ END AS [内容],
+ EXTRACT_TOKEN(Strings,2,'|') AS IPアドレス
 FROM
  '[LOGFILEPATH]'
 WHERE
  SourceName = 'Microsoft-Windows-TerminalServices-LocalSessionManager' AND
-　(EventID = 21 OR EventID = 23 OR EventID = 24 OR EventID = 25)</QueryData>
+　(EventID = 21 OR EventID = 23 OR EventID = 24 OR EventID = 25)
+</QueryData>
     <QueryID>5044f5f6-e9d4-4ce9-8dd4-6d1436404cf1</QueryID>
     <LogType>EVTLOG</LogType>
     <QueryCategory>EVT</QueryCategory>
     <IsFavorite>false</IsFavorite>
-    <DateModified>2018-03-02T10:22:41.9754409+09:00</DateModified>
+    <DateModified>2018-12-25T17:49:28.6402198+09:00</DateModified>
   </LPQuery>
   <LPQuery>
     <QueryName>【アカウント】ユーザ作成　</QueryName>
@@ -555,24 +556,20 @@ WHERE
   </LPQuery>
   <LPQuery>
     <QueryName>【稼働状況】システム時刻変更</QueryName>
-    <QueryDescription>ソース Microsoft-Windows-Kernel-GeneralとMicrosoft-Windows-Power-Troubleshooter、イベントID1のレコードを抽出する。そのうちの時間変更秒数が2秒以上のログを表示する。</QueryDescription>
+    <QueryDescription>ソース Microsoft-Windows-Kernel-General、イベントID1のレコードを抽出する。そのうちの時間変更秒数が2秒以上のログを表示する。</QueryDescription>
     <QueryData>SELECT 
  TimeGenerated AS 日時,
  ComputerName AS コンピュータ名,
- SID,
- TO_LOCALTIME(TO_TIMESTAMP(SUBSTR(EXTRACT_TOKEN(Strings,0,'|'), 0, 19), 'yyyy-MM-dd?hh:mm:ss')) AS 変更前(ローカル),
+ TO_LOCALTIME(TO_TIMESTAMP(SUBSTR(EXTRACT_TOKEN(Strings,1,'|'), 0, 19), 'yyyy-MM-dd?hh:mm:ss')) AS 変更前(ローカル),
+ TO_LOCALTIME(TO_TIMESTAMP(SUBSTR(EXTRACT_TOKEN(Strings,0,'|'), 0, 19), 'yyyy-MM-dd?hh:mm:ss')) AS 変更後(ローカル),
  TO_INT(SUB(TO_TIMESTAMP(SUBSTR(EXTRACT_TOKEN(Strings,0,'|'), 0, 19), 'yyyy-MM-dd?hh:mm:ss'), TO_TIMESTAMP(SUBSTR(EXTRACT_TOKEN(Strings,1,'|'), 0, 19), 'yyyy-MM-dd?hh:mm:ss'))) AS 差分秒,
  EXTRACT_TOKEN(Strings,1,'|') AS 変更前,
- EXTRACT_TOKEN(Strings,0,'|') AS 変更後,
- CASE SourceName
-  WHEN 'Microsoft-Windows-Kernel-General' THEN '時刻変更'
-  WHEN 'Microsoft-Windows-Power-Troubleshooter' THEN 'スリープ再開'
- END AS [理由]
+ EXTRACT_TOKEN(Strings,0,'|') AS 変更後
 FROM 
  '[LOGFILEPATH]'
 WHERE
  EventID='1'
- AND (SourceName='Microsoft-Windows-Kernel-General' OR SourceName='Microsoft-Windows-Power-Troubleshooter')
+ AND SourceName='Microsoft-Windows-Kernel-General'
  AND 差分秒 &lt;&gt;0
  AND 差分秒 &lt;&gt;-1
  AND 差分秒 &lt;&gt;1
@@ -581,7 +578,56 @@ WHERE
     <LogType>EVTLOG</LogType>
     <QueryCategory>EVT</QueryCategory>
     <IsFavorite>false</IsFavorite>
-    <DateModified>2016-01-05T10:47:30.0630544+09:00</DateModified>
+    <DateModified>2018-12-25T17:55:21.6462983+09:00</DateModified>
+  </LPQuery>
+  <LPQuery>
+    <QueryName>【稼働状況】スリープ/スリープ解除</QueryName>
+    <QueryDescription>ソース Microsoft-Windows-Power-Troubleshooter、イベントID1のレコードを抽出する。</QueryDescription>
+    <QueryData>SELECT 
+ TimeGenerated AS 日時,
+ ComputerName AS コンピュータ名,
+ SID,
+ TO_LOCALTIME(TO_TIMESTAMP(SUBSTR(EXTRACT_TOKEN(Strings,0,'|'), 0, 19), 'yyyy-MM-dd?hh:mm:ss')) AS スリープ時間(ローカル),
+ TO_LOCALTIME(TO_TIMESTAMP(SUBSTR(EXTRACT_TOKEN(Strings,1,'|'), 0, 19), 'yyyy-MM-dd?hh:mm:ss')) AS スリープ解除時間(ローカル),
+ TO_INT(SUB(TO_TIMESTAMP(SUBSTR(EXTRACT_TOKEN(Strings,0,'|'), 0, 19), 'yyyy-MM-dd?hh:mm:ss'), TO_TIMESTAMP(SUBSTR(EXTRACT_TOKEN(Strings,1,'|'), 0, 19), 'yyyy-MM-dd?hh:mm:ss'))) AS 差分秒,
+ EXTRACT_TOKEN(Strings,0,'|') AS スリープ時間,
+ EXTRACT_TOKEN(Strings,1,'|') AS スリープ解除時間
+FROM 
+ '[LOGFILEPATH]'
+WHERE
+ EventID='1' AND SourceName='Microsoft-Windows-Power-Troubleshooter'
+</QueryData>
+    <QueryID>3086ba14-3fcc-4883-b133-651a104caf3e</QueryID>
+    <LogType>EVTLOG</LogType>
+    <QueryCategory>EVT</QueryCategory>
+    <IsFavorite>false</IsFavorite>
+    <DateModified>2018-12-25T17:52:43.7200193+09:00</DateModified>
+  </LPQuery>
+  <LPQuery>
+    <QueryName>【稼働状況】ネットワーク接続/切断</QueryName>
+    <QueryDescription>ソース Microsoft-Windows-NetworkProfile、イベントID 10000, 10001のレコードを抽出する。ファイルはMicrosoft-Windows-NetworkProfile%4Opertaional.evtx
+</QueryDescription>
+    <QueryData>SELECT 
+ TimeGenerated AS 日時,
+ ComputerName AS コンピュータ名,
+ EXTRACT_TOKEN(Strings,0,'|')  AS 名前, 
+ CASE EventID
+  WHEN 10000 THEN '接続'
+  WHEN 10001 THEN '切断'
+ END AS 状態
+FROM 
+ '[LOGFILEPATH]'
+WHERE
+ SourceName = 'Microsoft-Windows-NetworkProfile' AND
+ (EventID = '10000' OR  EventID = '10001')
+
+
+</QueryData>
+    <QueryID>7bcb0941-156b-498f-984b-a8448e3551d8</QueryID>
+    <LogType>EVTLOG</LogType>
+    <QueryCategory>EVT</QueryCategory>
+    <IsFavorite>false</IsFavorite>
+    <DateModified>2018-12-25T14:18:01.1818621+09:00</DateModified>
   </LPQuery>
   <LPQuery>
     <QueryName>【認証】ネットワークログオン</QueryName>
