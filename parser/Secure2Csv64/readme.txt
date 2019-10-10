@@ -7,8 +7,8 @@ All files and folders in $MFT are linked to a security descriptor, by a Security
 
 Security descriptors include information about who owns an object, who can access it and in what way, and what types of access are audited. Security descriptors, in turn, contain the access control list (ACL) of an object, which includes all of the security permissions that apply to that object. An objectís security descriptor can contain two types of ACLs:
 
-ï A discretionary access control list (DACL) that identifies the users and groups who are allowed or denied access
-ï A system access control list (SACL) that controls how access is audited
+ÅEA discretionary access control list (DACL) that identifies the users and groups who are allowed or denied access
+ÅEA system access control list (SACL) that controls how access is audited
 
 There's also numerous structures to handle. This is the top level one.
 typedef struct _SECURITY_DESCRIPTOR {

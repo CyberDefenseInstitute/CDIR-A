@@ -1,7 +1,7 @@
 
 
 
-NetworkUsageView v1.12
+NetworkUsageView v1.13
 Copyright (c) 2017 - 2018 Nir Sofer
 Web site: http://www.nirsoft.net
 
@@ -32,6 +32,10 @@ the network usage information.
 Versions History
 ================
 
+
+* Version 1.13:
+  o Added 'Add Header Line To CSV/Tab-Delimited File' option (Turned
+    on by default).
 
 * Version 1.12:
   o Added 'Save All Items' option (Shift+Ctrl+S).

@@ -28,7 +28,7 @@ import struct
 import ctypes
 import shutil
 import codecs
-from parserutility import utility
+from parserutility import utility, findstreams
 
 if os.name!="nt":
     from ctypes import c_size_t, c_int, c_void_p, cdll, c_ubyte, cast, POINTER, byref
@@ -88,21 +88,25 @@ def main():
         "Doesn't exist prefetch(.pf) files"
         sys.exit(1)
 
-
 def searchDIR(in_dir):
     fileindex = 0
     exists_flag = False
     for root, dirs, files in os.walk(in_dir):
         for filename in files:
-            if not re.search(r'\.pf$', filename):
-                continue
-            exists_flag = True
-            pf_filepath = os.path.join(root, filename)
-            chkheader(pf_filepath, root, filename, fileindex)
-            fileindex += 1
+            if re.search(r'\.pf$', filename):
+                exists_flag = True
+                pf_filepath = os.path.join(root, filename)
+                chkheader(pf_filepath, root, filename, fileindex)
+                fileindex += 1
+            paths = findstreams( os.path.join( os.getcwd(), root, filename ) )
+            if len ( paths ) > 0:
+                exists_flag = True
+                for path in paths:
+                    pf_filepath = os.path.join(root, filename + path )
+                    chkheader(pf_filepath, root, filename + path, fileindex)
+                    fileindex += 1
     remove_dcpdir()
     return exists_flag
-
 
 def chkheader(pf_filepath, root, filename, fileindex):
     with open(pf_filepath, "rb") as pf:
@@ -382,8 +386,13 @@ def parsepf(root, pf, filename, header_version, fileindex):
 
     # run count(Win8 or Win10)
     if header_version == "1a" or header_version == "1e":
+        # format 224 or 216
         pf.seek(208)
         prefetch_record_field[prefetch_column_order["run_count"][1]] = utility().hextoint(pf.read(4))
+        if prefetch_record_field[prefetch_column_order["run_count"][1]] == 0:
+            pf.seek(200)
+            prefetch_record_field[prefetch_column_order["run_count"][1]] = utility().hextoint(pf.read(4))
+
 
     # volume information/number
     pf.seek(108)

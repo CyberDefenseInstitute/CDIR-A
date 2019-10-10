@@ -3,6 +3,7 @@ import datetime
 import re
 import binascii
 import os
+import ctypes
 
 class utility(object):
     def get_timezone_str(self):
@@ -39,3 +40,43 @@ class utility(object):
         hex_array = re.split('(..)', binascii.hexlify(hex))[1::2]
         list.reverse(hex_array)
         return int(("".join(hex_array)),16)
+
+class LARGE_INTEGER ( ctypes.Structure ):
+    LONGLONG = ctypes.c_longlong
+    _fields_ = [
+        ( "QuadPart", LONGLONG )
+    ]
+
+class WIN32_FIND_STREAM_DATA ( ctypes.Structure ):
+    MAX_PATH = 260
+    WCHAR = ctypes.c_wchar * ( MAX_PATH + 1 )
+    _fields_ = [
+        ( "StreamSize", LARGE_INTEGER ),
+        ( "cStreamName", WCHAR )
+    ]
+
+def findstreams( path ):
+
+    HANDLE = ctypes.c_void_p
+    LPSTR = ctypes.c_wchar_p
+    FindStreamInfoStandard = 0
+    INVALID_HANDLE_VALUE = -1
+
+    streamData = WIN32_FIND_STREAM_DATA()
+    FindFirstStreamW = ctypes.windll.kernel32.FindFirstStreamW
+    FindFirstStreamW.restype = HANDLE
+    FindNextStreamW = ctypes.windll.kernel32.FindNextStreamW
+    hfind = FindFirstStreamW( LPSTR( path ), FindStreamInfoStandard, ctypes.byref( streamData ), 0 )
+    paths = list()
+
+    if hfind != INVALID_HANDLE_VALUE:
+        if streamData.cStreamName != "::$DATA":
+            paths.append( streamData.cStreamName[0:len( streamData.cStreamName )-6] )
+        while FindNextStreamW( HANDLE(hfind), ctypes.byref( streamData )):
+            if streamData.cStreamName != "::$DATA":
+                paths.append( streamData.cStreamName[0:len(streamData.cStreamName)-6] )
+        
+        if ctypes.windll.kernel32.FindClose( HANDLE(hfind) ) != True:
+            print "ERROR"
+
+    return paths

@@ -1,8 +1,8 @@
 
 
 
-BrowsingHistoryView v2.17
-Copyright (c) 2012 - 2018 Nir Sofer
+BrowsingHistoryView v2.25
+Copyright (c) 2012 - 2019 Nir Sofer
 Web site: http://www.nirsoft.net
 
 
@@ -27,6 +27,17 @@ any user interface.
 Versions History
 ================
 
+
+* Version 2.25:
+  o Added support for Waterfox Web browser.
+
+* Version 2.21:
+  o Added option to specify the time range in local time (Instead of
+    GMT).
+
+* Version 2.20:
+  o BrowsingHistoryView now automatically detects the Chromium-based
+    Edge Web browser.
 
 * Version 2.17:
   o You can now specify environment variables in the history files of
