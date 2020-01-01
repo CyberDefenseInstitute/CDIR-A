@@ -37,7 +37,7 @@ class utility(object):
         return ddt + "." + ms
 
     def hextoint(self, hex):
-        hex_array = re.split('(..)', binascii.hexlify(hex))[1::2]
+        hex_array = re.split('(..)', binascii.hexlify(hex).decode())[1::2]
         list.reverse(hex_array)
         return int(("".join(hex_array)),16)
 
@@ -77,6 +77,6 @@ def findstreams( path ):
                 paths.append( streamData.cStreamName[0:len(streamData.cStreamName)-6] )
         
         if ctypes.windll.kernel32.FindClose( HANDLE(hfind) ) != True:
-            print "ERROR"
+            print ("ERROR")
 
     return paths

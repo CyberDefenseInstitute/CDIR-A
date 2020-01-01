@@ -129,10 +129,10 @@ def parseusnjrnl(journal_filesize, start_point, pathname, journal_file, output_f
 
         #entry size
         journal_file.seek(int(start_point))
-        size_hex = re.split('(..)', binascii.hexlify(journal_file.read(4)))[1::2]
+
+        size_hex = re.split('(..)', binascii.hexlify(journal_file.read(4)).decode())[1::2]
         list.reverse(size_hex)
         entry_size = int(("".join(size_hex)), 16)
-
         #file ID
         journal_file.seek(int(start_point + 8))
         file_id = struct.unpack("<L", journal_file.read(4))[0]
@@ -161,13 +161,13 @@ def parseusnjrnl(journal_filesize, start_point, pathname, journal_file, output_f
         try:
             filename = filename.decode('UTF-16LE').encode('UTF-8')
         except UnicodeDecodeError:
-            print repr(filename)
+            print(repr(filename))
 
         #write record field with appropriate order
         record_field.append(computer_name)
         record_field.append(ts_s)
         record_field.append(time_delta)
-        record_field.append(filename)
+        record_field.append(filename.decode(errors="ignore"))
         record_field.append(rhex)
         record_field.append(rflag)
         record_field.append(file_id)
@@ -181,7 +181,7 @@ def parseusnjrnl(journal_filesize, start_point, pathname, journal_file, output_f
             return
         journal_file.seek(next_start)
         while True:
-            if binascii.hexlify(journal_file.read(4)) != "00000000":
+            if binascii.hexlify(journal_file.read(4)).decode() != "00000000":
                 start_point = journal_file.tell() - 4
                 break
 
@@ -196,7 +196,7 @@ if __name__ == '__main__':
             journal_filesize = os.path.getsize(journal_pathname)
             time_delta = utility().get_timezone_str()
             check_start_point(journal_pathname)
-            print "Saved: %s\\%s_output.csv" % (out_dir, filename)
+            print ("Saved: {}\\{}_output.csv".format(out_dir, filename))
     if not exists_flag:
-        print "$UsnJrnl-$J not found"
+        print ("$UsnJrnl-$J not found")
         sys.exit(1)

@@ -73,6 +73,8 @@ def parse_windows_timestamp(qword):
         return utility().get_timestamp_str(qword)
     except ValueError:
         return ""
+    except OSError:
+        return ""
 
 def make_unix_timestamp_value_getter(value_name):
     """
@@ -271,10 +273,10 @@ FIELDS_UPDATE1709 = [
     Field("program_instance_id", make_value_getter("ProgramInstanceId"), "Program Instance Id"),
 ]
 
-ExecutionEntry = namedtuple("ExecutionEntry", map(lambda e: e.name, FIELDS))
-ExecutionEntryInventoryApp = namedtuple("ExecutionEntryInventoryApp", map(lambda e: e.name, FIELDS_INVENTORY_APP))
-ExecutionEntryInventoryFile = namedtuple("ExecutionEntryInventoryFile", map(lambda e: e.name, FIELDS_INVENTORY_FILE))
-ExecutionEntryUpdate1709 = namedtuple("ExecutionEntrypdate1709", map(lambda e: e.name, FIELDS_UPDATE1709_DATASTORE))
+ExecutionEntry = namedtuple("ExecutionEntry", [e.name for e in FIELDS])
+ExecutionEntryInventoryApp = namedtuple("ExecutionEntryInventoryApp", [e.name for e in FIELDS_INVENTORY_APP])
+ExecutionEntryInventoryFile = namedtuple("ExecutionEntryInventoryFile", [e.name for e in FIELDS_INVENTORY_FILE])
+ExecutionEntryUpdate1709 = namedtuple("ExecutionEntrypdate1709", [e.name for e in FIELDS_UPDATE1709_DATASTORE])
 
 def parse_execution_entry(key, fields):
     if fields == FIELDS:
@@ -319,9 +321,9 @@ def standardOutput(ee, args, file, pf, count, fields):
     w = unicodecsv.writer(pf, delimiter="\t", lineterminator="\n", encoding="utf-8", quoting=unicodecsv.QUOTE_ALL)
     computer_name = utility().get_computer_name(file)
     if count == 0 and not args.noheader:
-        w.writerow(["Computer Name"]+map(lambda e: e.collname, fields))
+        w.writerow(["Computer Name"]+[e.collname for e in fields])
     for e in ee:
-        w.writerow([computer_name]+map(lambda i: getattr(e, i.name), fields))
+        w.writerow([computer_name]+[getattr(e, i.name) for i in fields])
 
 def mergeRegistoryInfomation(inventoryapp, inventoryfile):
     find_app = []
@@ -361,8 +363,8 @@ def parseHive(file, outputdirectory, args, count):
         g_logger.info("Root\\File key not found")
         pass
 
-    if len(entries) is not 0:
-        with open(os.path.join(outputdirectory,"amcache_output.csv"), "a") as pf:
+    if len(entries) != 0:
+        with open(os.path.join(outputdirectory,"amcache_output.csv"), "ab") as pf:
             standardOutput(entries, args, file, pf, count, FIELDS)
         oldstyle = True
 
@@ -375,8 +377,8 @@ def parseHive(file, outputdirectory, args, count):
         g_logger.info("Root\\InventoryApplication or Root\\InventoryApplicationFile  key not found")
         pass
 
-    if len(entries_app) is not 0 and len(entries_file) is not 0:
-        with open(os.path.join(outputdirectory,"amcache_inventory_output.csv"), "a") as pf:
+    if len(entries_app) != 0 and len(entries_file) != 0:
+        with open(os.path.join(outputdirectory,"amcache_inventory_output.csv"), "ab") as pf:
             standardOutput(entries_update1709, args, file, pf, count, FIELDS_UPDATE1709)
         newstyle = True
 
@@ -415,13 +417,13 @@ def main(argv=None):
         count = hivefiles.index(file)
         result = parseHive(file, outputdirectory, args, count)
     if len(hivefiles) <= 0:
-        print "Doesn't exist Amcache.hve files"
+        print("Doesn't exist Amcache.hve files")
         sys.exit(1)
     else:
         if result["old"]:
-            print "Saved: %s\\amcache_output.csv" % outputdirectory
+            print("Saved: {}\\amcache_output.csv".format(outputdirectory))
         if result["new"]:
-            print "Saved: %s\\amcache_inventory_output.csv" % outputdirectory
+            print("Saved: {}\\amcache_inventory_output.csv".format(outputdirectory))
 
 if __name__ == "__main__":
     main(argv=sys.argv)

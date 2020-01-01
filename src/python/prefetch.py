@@ -75,17 +75,13 @@ def main():
     try:
         RtlDecompressBufferEx = ctypes.windll.ntdll.RtlDecompressBufferEx
     except AttributeError:
-        print
-        "Notice: Windows 8 or above version needs to parse Windows 10 prefetch."
+        print("Notice: Windows 8 or above version needs to parse Windows 10 prefetch.")
     exists_flag = searchDIR(in_dir)
     if exists_flag:
-        print
-        "Saved: %s\\prefetch_output.csv" % out_dir
-        print
-        "Saved: %s\\prefetch_output_list.csv" % out_dir
+        print("Saved: {}\\prefetch_output.csv".format(out_dir))
+        print("Saved: {}\\prefetch_output_list.csv".format(out_dir))
     else:
-        print
-        "Doesn't exist prefetch(.pf) files"
+        print("Doesn't exist prefetch(.pf) files")
         sys.exit(1)
 
 def searchDIR(in_dir):
@@ -110,7 +106,7 @@ def searchDIR(in_dir):
 
 def chkheader(pf_filepath, root, filename, fileindex):
     with open(pf_filepath, "rb") as pf:
-        header_version = binascii.hexlify(pf.read(1))
+        header_version = binascii.hexlify(pf.read(1)).decode()
         if header_version == "17" or header_version == "1a" or header_version == "1e":
             parse_pf_win7and8(root, pf, filename, header_version, fileindex)
         if header_version == "4d":
@@ -141,7 +137,7 @@ def parse_pf_win10(root, filename, header_version, fileindex):
     dcp_dir = os.path.join(root, "dcp")
     pf_filepath = os.path.join(dcp_dir, filename)
     with open(pf_filepath, "rb") as pf:
-        header_version = binascii.hexlify(pf.read(1))
+        header_version = binascii.hexlify(pf.read(1)).decode()
         parsepf(root, pf, filename, header_version, fileindex)
 
 
@@ -169,7 +165,7 @@ def get_prefetch_list_header():
 
 
 def write_output_file(output_filename, contents, fileindex):
-    with open(os.path.join(out_dir, output_filename), "a") as output_file:
+    with open(os.path.join(out_dir, output_filename), "a", encoding='utf-8') as output_file:
         output_line = csv.writer(output_file, delimiter="\t", lineterminator="\n", quoting=csv.QUOTE_ALL)
         if fileindex == 0 and not args.noheader:
             if output_filename == "prefetch_output.csv":
@@ -299,8 +295,8 @@ def parsepf(root, pf, filename, header_version, fileindex):
     prefetch_record_field = [""] * column_num
 
     # convert sjis -> utf-8 for output
-    filename_cp932 = filename.decode('cp932')
-    filename = filename_cp932.encode('utf-8')
+    #filename_cp932 = filename.decode('cp932')
+    #filename = filename_cp932.encode('utf-8')
 
     # search NULL in executable name
     pf.seek(16)
@@ -314,7 +310,7 @@ def parsepf(root, pf, filename, header_version, fileindex):
     pf.seek(16)
     exename_hex = binascii.hexlify(pf.read(i))
     exename_uni_str = codecs.decode(exename_hex, 'hex_codec').decode('utf-16')
-    exename_utf_str = exename_uni_str.encode('utf-8')
+    exename_utf_str = exename_uni_str.encode('utf-8').decode()
 
     # list for comparing to exe path
     exename_list = []
@@ -343,7 +339,7 @@ def parsepf(root, pf, filename, header_version, fileindex):
                 pf.seek(current_offset)
                 filename_hex = binascii.hexlify(pf.read(filename_length))
                 filename_uni_str = codecs.decode(filename_hex, 'hex_codec').decode('utf-16')
-                filename_utf_str = filename_uni_str.encode('utf-8')
+                filename_utf_str = filename_uni_str.encode('utf-8').decode()
                 if exename_utf_str in filename_utf_str:
                     exename_list.append(filename_utf_str)
                 output_list.append(filename_utf_str)
@@ -367,7 +363,7 @@ def parsepf(root, pf, filename, header_version, fileindex):
     # prefetch hash
     pf.seek(76)
     hash_bin = pf.read(4)
-    hash_hex = re.split('(..)', binascii.hexlify(hash_bin))[1::2]
+    hash_hex = re.split('(..)', binascii.hexlify(hash_bin).decode())[1::2]
     list.reverse(hash_hex)
     hash_value = "".join(hash_hex)
     prefetch_record_field[prefetch_column_order["hash"][1]] = hash_value
@@ -412,7 +408,7 @@ def parsepf(root, pf, filename, header_version, fileindex):
     pf.seek(vl_info_offset + vl_devicepath_offset)
     vol1 = []
     vol2 = []
-    for a in re.split('(..)', binascii.hexlify(pf.read(vl_len * 2)))[1::2]:
+    for a in re.split('(..)', binascii.hexlify(pf.read(vl_len * 2)).decode())[1::2]:
         if a != "00":
             vol1.append(a)
             vol2 = binascii.a2b_hex("".join(vol1))
@@ -424,10 +420,10 @@ def parsepf(root, pf, filename, header_version, fileindex):
             re.sub(r"\\VOLUME{[0-9a-z_./?-]+\}|\\DEVICE\\HARDDISKVOLUME\d+", \
                    "", prefetch_record_field[prefetch_column_order["exe_file_path"][1]])
     else:
-        prefetch_record_field[prefetch_column_order["volume_path"][1]] = vol2
+        prefetch_record_field[prefetch_column_order["volume_path"][1]] = vol2.decode()
         # remove volume path from exe file path with replace
         prefetch_record_field[prefetch_column_order["exe_file_path"][1]] = \
-            prefetch_record_field[prefetch_column_order["exe_file_path"][1]].replace(vol2, "")
+            prefetch_record_field[prefetch_column_order["exe_file_path"][1]].replace(vol2.decode(), "")
 
     # last run information(Win7)
     if header_version == "17":
@@ -444,8 +440,10 @@ def parsepf(root, pf, filename, header_version, fileindex):
                 time = utility().get_timestamp_str(
                     utility().hextoint(pf.read(8)))
                 prefetch_record_field[
-                    prefetch_column_order["date_time_" + str((lastrun_location - 128) / 8 + 1)][1]] = time
+                    prefetch_column_order["date_time_" + str(int((lastrun_location - 128) / 8 + 1))][1]] = time
             except ValueError:
+                pass
+            except OSError:
                 pass
             lastrun_location = lastrun_location + 8
 

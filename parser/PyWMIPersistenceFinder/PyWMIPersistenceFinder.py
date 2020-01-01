@@ -92,13 +92,13 @@ def main():
     #Read objects.data 4 lines at a time to look for bindings
     objects_file = open(sys.argv[1], "rb")
     current_line = objects_file.readline()
-    lines_list = [current_line]
+    lines_list = [current_line.decode(errors="ignore")]
     current_line = objects_file.readline()
-    lines_list.append(current_line)
+    lines_list.append(current_line.decode(errors="ignore"))
     current_line = objects_file.readline()
-    lines_list.append(current_line)
+    lines_list.append(current_line.decode(errors="ignore"))
     current_line = objects_file.readline()
-    lines_list.append(current_line)
+    lines_list.append(current_line.decode(errors="ignore"))
 
     #Precompiled match objects to search each line with
     event_consumer_mo = re.compile(r"([\w\_]*EventConsumer\.Name\=\")([\w\s]*)(\")")
@@ -138,7 +138,7 @@ def main():
 
         # Increment lines and look again
         current_line = objects_file.readline()
-        lines_list.append(current_line)
+        lines_list.append(current_line.decode(errors="ignore"))
         lines_list.pop(0)
 
     # Close the file and look for consumers and filters
@@ -149,20 +149,20 @@ def main():
     # Read objects.data 4 lines at a time to look for filters and consumers
     objects_file = open(sys.argv[1], "rb")
     current_line = objects_file.readline()
-    lines_list = [current_line]
+    lines_list = [current_line.decode(errors="ignore")]
     current_line = objects_file.readline()
-    lines_list.append(current_line)
+    lines_list.append(current_line.decode(errors="ignore"))
     current_line = objects_file.readline()
-    lines_list.append(current_line)
+    lines_list.append(current_line.decode(errors="ignore"))
     current_line = objects_file.readline()
-    lines_list.append(current_line)
+    lines_list.append(current_line.decode(errors="ignore"))
 
     while current_line:
         potential_page = " ".join(lines_list).replace("\n", "")
 
         # Check each potential page for the consumers we are looking for
         if "EventConsumer" in potential_page:
-            for event_consumer_name, event_consumer_details in consumer_dict.iteritems():
+            for event_consumer_name, event_consumer_details in consumer_dict.items():
                 # Can't precompile regex because it is dynamically created with each consumer name
                 if "CommandLineEventConsumer" in potential_page:
                     consumer_mo = re.compile("(CommandLineEventConsumer)(\x00\x00)(.*?)(\x00)(.*?)"
@@ -173,8 +173,8 @@ def main():
                         noisy_string = consumer_match.groups()[2]
                         consumer_details = "\n\t\tConsumer Type: {}\n\t\tArguments:     {}".format(
                             consumer_match.groups()[0],
-                            filter(lambda event_consumer_name: event_consumer_name in
-                                   PRINTABLE_CHARS, noisy_string))
+                            "".join(list(filter(lambda event_consumer_name: event_consumer_name in
+                                   PRINTABLE_CHARS, noisy_string))))
                         if consumer_match.groups()[5]:
                             consumer_details += "\n\t\tConsumer Name: {}".format(consumer_match.groups()[5])
                         if consumer_match.groups()[7]:
@@ -195,7 +195,7 @@ def main():
                         consumer_dict[event_consumer_name].add(consumer_details)
 
         # Check each potential page for the filters we are looking for
-        for event_filter_name, event_filter_details in filter_dict.iteritems():
+        for event_filter_name, event_filter_details in filter_dict.items():
             if event_filter_name in potential_page:
                 # Can't precompile regex because it is dynamically created with each filter name
                 filter_mo = re.compile(
@@ -208,13 +208,13 @@ def main():
                     filter_dict[event_filter_name].add(filter_details)
 
         current_line = objects_file.readline()
-        lines_list.append(current_line)
+        lines_list.append(current_line.decode(errors="ignore"))
         lines_list.pop(0)
     objects_file.close()
     
     # Print results to stdout. CSV will be in future version.
     print("\n    Bindings:\n")
-    for binding_name, binding_details in bindings_dict.iteritems():
+    for binding_name, binding_details in bindings_dict.items():
         if (
                 "BVTConsumer-BVTFilter" in binding_name or
                 "SCM Event Log Consumer-SCM Event Log Filter" in binding_name):
