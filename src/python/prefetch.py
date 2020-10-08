@@ -385,10 +385,11 @@ def parsepf(root, pf, filename, header_version, fileindex):
         # format 224 or 216
         pf.seek(208)
         prefetch_record_field[prefetch_column_order["run_count"][1]] = utility().hextoint(pf.read(4))
-        if prefetch_record_field[prefetch_column_order["run_count"][1]] == 0:
-            pf.seek(200)
-            prefetch_record_field[prefetch_column_order["run_count"][1]] = utility().hextoint(pf.read(4))
-
+        pf.seek(204)
+        chk = utility().hextoint(pf.read(4))
+        if chk != 0:
+             pf.seek(200)
+             prefetch_record_field[prefetch_column_order["run_count"][1]] = utility().hextoint(pf.read(4))
 
     # volume information/number
     pf.seek(108)

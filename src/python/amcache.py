@@ -317,10 +317,10 @@ def searchHiveFiles(fol):
             hivefiles.append(os.path.join(root, ff))
     return hivefiles
 
-def standardOutput(ee, args, file, pf, count, fields):
+def standardOutput(ee, file, pf, header_flag, fields):
     w = unicodecsv.writer(pf, delimiter="\t", lineterminator="\n", encoding="utf-8", quoting=unicodecsv.QUOTE_ALL)
     computer_name = utility().get_computer_name(file)
-    if count == 0 and not args.noheader:
+    if header_flag:
         w.writerow(["Computer Name"]+[e.collname for e in fields])
     for e in ee:
         w.writerow([computer_name]+[getattr(e, i.name) for i in fields])
@@ -348,10 +348,8 @@ def mergeRegistoryInfomation(inventoryapp, inventoryfile):
 
     return merged
 
-def parseHive(file, outputdirectory, args, count):
+def parseHive(file, outputdirectory, args, result_flag):
     r = Registry.Registry(file)
-    oldstyle = False
-    newstyle = False
     entries = []
     entries_app = []
     entries_file = []
@@ -365,8 +363,9 @@ def parseHive(file, outputdirectory, args, count):
 
     if len(entries) != 0:
         with open(os.path.join(outputdirectory,"amcache_output.csv"), "ab") as pf:
-            standardOutput(entries, args, file, pf, count, FIELDS)
-        oldstyle = True
+            header = not (args.noheader or result_flag["old"])
+            standardOutput(entries, file, pf, header, FIELDS)
+        result_flag["old"] = True
 
     # for new windows10 hive construction
     try:
@@ -379,11 +378,9 @@ def parseHive(file, outputdirectory, args, count):
 
     if len(entries_app) != 0 and len(entries_file) != 0:
         with open(os.path.join(outputdirectory,"amcache_inventory_output.csv"), "ab") as pf:
-            standardOutput(entries_update1709, args, file, pf, count, FIELDS_UPDATE1709)
-        newstyle = True
-
-    return { "old": oldstyle, "new": newstyle }
-
+            header = not (args.noheader_inventory or result_flag["new"])
+            standardOutput(entries_update1709, file, pf, header, FIELDS_UPDATE1709)
+        result_flag["new"] = True
 
 def main(argv=None):
     if argv is None:
@@ -397,7 +394,9 @@ def main(argv=None):
     parser.add_argument("-v", action="store_true", dest="verbose",
                         help="Enable verbose output")
     parser.add_argument("--noheader", action="store_true", dest="noheader",
-                        help="Output without header")
+                        help="Output without header (old_style)")
+    parser.add_argument("--noheader-inventory", action="store_true", dest="noheader_inventory",
+                        help="Output without header (new_style)")
     args = parser.parse_args(argv[1:])
 
     if args.verbose:
@@ -412,17 +411,18 @@ def main(argv=None):
     inputdirectory=args.dir
     outputdirectory=args.output
 
+    result_flag = {"old": False, "new": False}
+
     hivefiles = searchHiveFiles(inputdirectory)
     for file in hivefiles:
-        count = hivefiles.index(file)
-        result = parseHive(file, outputdirectory, args, count)
+        parseHive(file, outputdirectory, args, result_flag)
     if len(hivefiles) <= 0:
         print("Doesn't exist Amcache.hve files")
         sys.exit(1)
     else:
-        if result["old"]:
+        if result_flag["old"]:
             print("Saved: {}\\amcache_output.csv".format(outputdirectory))
-        if result["new"]:
+        if result_flag["new"]:
             print("Saved: {}\\amcache_inventory_output.csv".format(outputdirectory))
 
 if __name__ == "__main__":

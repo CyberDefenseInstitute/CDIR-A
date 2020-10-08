@@ -1,18 +1,18 @@
 
 
 
-BrowsingHistoryView v2.25
-Copyright (c) 2012 - 2019 Nir Sofer
-Web site: http://www.nirsoft.net
+BrowsingHistoryView v2.41
+Copyright (c) 2012 - 2020 Nir Sofer
+Web site: https://www.nirsoft.net
 
 
 
 Description
 ===========
 
-BrowsingHistoryView is a utility that reads the history data of 4
-different Web browsers (Internet Explorer, Mozilla Firefox, Google
-Chrome, and Safari) and displays the browsing history of all these Web
+BrowsingHistoryView is a utility that reads the history data of different
+Web browsers (Mozilla Firefox, Google Chrome, Internet Explorer,
+Microsoft Edge, Opera) and displays the browsing history of all these Web
 browsers in one table. The browsing history table includes the following
 information: Visited URL, Title, Visit Time, Visit Count, Web browser and
 User Profile. BrowsingHistoryView allows you to watch the browsing
@@ -27,6 +27,37 @@ any user interface.
 Versions History
 ================
 
+
+* Version 2.41:
+  o Fixed the /cfg command-line option to load the .cfg file from the
+    current directory if full path is not specified.
+
+* Version 2.40:
+  o Added new date/time filter: 'Load history items from the
+    following time range and date range (separately)'. For example... You
+    can search browsing history items that their modified date is between
+    01/01/2019 - 01/01/2020 and their modified time is between 02:00 -
+    04:00.
+
+* Version 2.36:
+  o Added button on the toolbar to delete Chrome / Firefox history
+    records.
+
+* Version 2.35:
+  o Added 'Delete Selected History Records' option (Ctrl+Delete),
+    which allows you to delete individual history records of Chrome and
+    Firefox Web browsers (Including Web browsers that use the same
+    history database of Chrome/Firefox, like Waterfox, SeaMonkey,
+    Vivaldi, and so on...)
+  o Other Web browsers are not supported.
+
+* Version 2.30:
+  o Added new columns: 'History File' and 'Record ID'.
+
+* Version 2.26:
+  o Added 'Double-Click Action' option, which allows you to choose
+    what to do when you double-click on history item - Open properties
+    window or open the URL in Web browser.
 
 * Version 2.25:
   o Added support for Waterfox Web browser.

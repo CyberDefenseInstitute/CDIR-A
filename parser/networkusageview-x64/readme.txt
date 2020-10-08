@@ -1,8 +1,8 @@
 
 
 
-NetworkUsageView v1.13
-Copyright (c) 2017 - 2018 Nir Sofer
+NetworkUsageView v1.20
+Copyright (c) 2017 - 2020 Nir Sofer
 Web site: http://www.nirsoft.net
 
 
@@ -32,6 +32,14 @@ the network usage information.
 Versions History
 ================
 
+
+* Version 1.20:
+  o Added new columns: Network Adapter Guid, Network Adapter Luid,
+    Connection Name.
+  o Added support for retrieving the network adapter information from
+    the Registry of the remote computer.
+  o Added support for retrieving the network adapter information from
+    the system hive of external drive.
 
 * Version 1.13:
   o Added 'Add Header Line To CSV/Tab-Delimited File' option (Turned
