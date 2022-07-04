@@ -99,7 +99,7 @@ def check_start_point(journal_pathname):
         column_name_flag = True
 
     with open(journal_pathname, "rb") as journal_file:
-        with open(os.path.join(out_dir, filename), "a") as output_file:
+        with open(os.path.join(out_dir, filename), "a", encoding='utf-8') as output_file:
             if column_name_flag and not args.noheader:
                 csv.writer((output_file), delimiter="\t", lineterminator="\n", quoting=csv.QUOTE_ALL).writerow(row)
             while True:
