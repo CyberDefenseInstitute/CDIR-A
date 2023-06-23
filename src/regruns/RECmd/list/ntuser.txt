@@ -11,3 +11,4 @@ SOFTWARE\Microsoft\Windows\CurrentVersion\RunServices
 SOFTWARE\Microsoft\Windows\CurrentVersion\RunServicesOnce
 SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Policies\Explorer\Run
 SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Run
+Environment
