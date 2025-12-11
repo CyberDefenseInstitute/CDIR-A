@@ -84,9 +84,20 @@ def main():
         print("Doesn't exist prefetch(.pf) files")
         sys.exit(1)
 
+def get_filesystem_type(drive):
+    fs_name = ctypes.create_unicode_buffer(255)
+    ctypes.windll.kernel32.GetVolumeInformationW(ctypes.c_wchar_p(drive), None, 0, None, None, None, fs_name, 255)
+    return fs_name.value
+
 def searchDIR(in_dir):
     fileindex = 0
     exists_flag = False
+    is_ntfs = False
+    paths = list()
+
+    if(get_filesystem_type(os.path.join( os.getcwd(), in_dir )[0:3]) == 'NTFS'):
+        is_ntfs = True
+
     for root, dirs, files in os.walk(in_dir):
         for filename in files:
             if re.search(r'\.pf$', filename):
@@ -94,7 +105,8 @@ def searchDIR(in_dir):
                 pf_filepath = os.path.join(root, filename)
                 chkheader(pf_filepath, root, filename, fileindex)
                 fileindex += 1
-            paths = findstreams( os.path.join( os.getcwd(), root, filename ) )
+            if(is_ntfs):
+                paths = findstreams( os.path.join( os.getcwd(), root, filename ) )
             if len ( paths ) > 0:
                 exists_flag = True
                 for path in paths:
@@ -115,7 +127,7 @@ def chkheader(pf_filepath, root, filename, fileindex):
                     RtlDecompressBufferEx = ctypes.windll.ntdll.RtlDecompressBufferEx
             except AttributeError:
                 return
-            parse_pf_win10(root, filename, header_version, fileindex)
+            parse_pf_win10and11(root, filename, header_version, fileindex)
         else:
             pass
 
@@ -131,7 +143,7 @@ def parse_pf_win7and8(root, pf, filename, header_version, fileindex):
     parsepf(root, pf, filename, header_version, fileindex)
 
 
-def parse_pf_win10(root, filename, header_version, fileindex):
+def parse_pf_win10and11(root, filename, header_version, fileindex):
     pf_filepath = os.path.join(root, filename)
     decomp(root, filename, pf_filepath)
     dcp_dir = os.path.join(root, "dcp")
@@ -380,8 +392,8 @@ def parsepf(root, pf, filename, header_version, fileindex):
         pf.seek(152)
         prefetch_record_field[prefetch_column_order["run_count"][1]] = utility().hextoint(pf.read(4))
 
-    # run count(Win8 or Win10)
-    if header_version == "1a" or header_version == "1e":
+    # run count(Win8, Win10 or Win11)
+    if header_version == "1a" or header_version == "1e" or header_version == "1f":
         # format 224 or 216
         pf.seek(208)
         prefetch_record_field[prefetch_column_order["run_count"][1]] = utility().hextoint(pf.read(4))
@@ -432,8 +444,8 @@ def parsepf(root, pf, filename, header_version, fileindex):
         time = utility().get_timestamp_str(utility().hextoint(pf.read(8)))
         prefetch_record_field[prefetch_column_order["date_time_1"][1]] = time
 
-    # run time information(Win8 or Win10)
-    if header_version == "1a" or header_version == "1e":
+    # run time information(Win8, Win10 or Win11)
+    if header_version == "1a" or header_version == "1e" or header_version == "1f":
         lastrun_location = 128
         while lastrun_location < 193:
             pf.seek(lastrun_location)
