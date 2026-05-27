@@ -420,7 +420,7 @@ def parsepf(root, pf, filename, header_version, fileindex):
     vl_len = utility().hextoint(pf.read(4))
     pf.seek(vl_info_offset + vl_devicepath_offset)
     vol1 = []
-    vol2 = []
+    vol2 = b''
     for a in re.split('(..)', binascii.hexlify(pf.read(vl_len * 2)).decode())[1::2]:
         if a != "00":
             vol1.append(a)
