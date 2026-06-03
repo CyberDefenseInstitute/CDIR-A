@@ -1,8 +1,8 @@
 
 
 
-BrowsingHistoryView v2.41
-Copyright (c) 2012 - 2020 Nir Sofer
+BrowsingHistoryView v2.61
+Copyright (c) 2012 - 2026 Nir Sofer
 Web site: https://www.nirsoft.net
 
 
@@ -27,6 +27,78 @@ any user interface.
 Versions History
 ================
 
+
+* Version 2.61:
+  o Added 'Save All Items' option (Shift+Ctrl+S).
+
+* Version 2.60:
+  o Added 'Black Background' option (Under the View menu). When it's
+    turned on, the main table is displayed in black background and white
+    text, instead of default system colors.
+
+* Version 2.59:
+  o Fixed bug: BrowsingHistoryView crashed when trying to read the IE
+    database (WebCacheV01.dat) on Windows 11 24H2.
+
+* Version 2.58:
+  o Fixed issue: When copying data to the clipboard or exporting to
+    tab-delimited file, every line contained an empty field in the end of
+    the line.
+
+* Version 2.57:
+  o Updated to read the history file of the latest Opera versions.
+
+* Version 2.56:
+  o Added option to choose another font (name and size) to display in
+    the main window.
+
+* Version 2.55:
+  o Added 'Sort By' toolbar button.
+
+* Version 2.54:
+  o 'Copy QR Code' option - Added white space around the QR Code.
+
+* Version 2.53:
+  o Fixed to read the history of multiple profiles in Yandex and
+    Vivaldi Web browsers.
+  o Updated to stop the Web browsers history scan when you press the
+    Esc key.
+
+* Version 2.52:
+  o The status bar now displays the current scanned history filename.
+  o Fixed the quick-filter text-box to copy to the clipboard when
+    pressing Ctrl+C.
+
+* Version 2.51:
+  o Added 'Visit Duration' column. This column is available only for
+    Chrome and Chromium-based Web browsers.
+  o Improved the 'Visited From' column in new versions of Chrome.
+
+* Version 2.50:
+  o Added option to change the sorting column from the menu (View ->
+    Sort By). Like the column header click sorting, if you click again
+    the same sorting menu item, it'll switch between ascending and
+    descending order. Also, if you hold down the shift key while choosing
+    the sort menu item, you'll get a secondary sorting.
+
+* Version 2.48:
+  o Added toolbar button to the 'Display QR Code' option.
+  o Fixed bug: When using the /SaveDirect command-line option, the
+    'Visited From' column contained incorrect value.
+
+* Version 2.47:
+  o Added 'Copy QR Code' option (Under the Edit menu), which allows
+    you to copy the QR Code image to the clipboard.
+  o Updated to work properly in high DPI mode.
+
+* Version 2.46:
+  o Added support for Brave Web browser.
+
+* Version 2.45:
+  o Added 'Display QR Code' option (Under the View menu): When it's
+    turned on, QR Code of the selected URL is displayed in the lower
+    pane, and you can use QR Code Reader app on your Smartphone to
+    instantly open the URL in the Web browser of your Smartphone.
 
 * Version 2.41:
   o Fixed the /cfg command-line option to load the .cfg file from the
@@ -349,7 +421,7 @@ System Requirements
 ===================
 
 This utility works on any version of Windows, starting from Windows 2000,
-and up to Windows 10. Both 32-bit and x64 systems are supported.
+and up to Windows 11. Both 32-bit and x64 systems are supported.
 
 The following Web browsers are supported:
 * Internet Explorer (Version 4.00 and greater)
@@ -358,6 +430,10 @@ The following Web browsers are supported:
 * Google Chrome
 * Safari
 * Opera (Version 15 or later, which is based on Chrome Web browser)
+* Yandex Web browser
+* Vivaldi Web browser
+* SeaMonkey Web browser
+* Brave Web browser
 
 
 

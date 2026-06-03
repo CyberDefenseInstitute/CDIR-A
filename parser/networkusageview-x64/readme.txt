@@ -1,9 +1,9 @@
 
 
 
-NetworkUsageView v1.20
-Copyright (c) 2017 - 2020 Nir Sofer
-Web site: http://www.nirsoft.net
+NetworkUsageView v1.32
+Copyright (c) 2017 - 2024 Nir Sofer
+Web site: https://www.nirsoft.net
 
 
 
@@ -11,10 +11,10 @@ Description
 ===========
 
 NetworkUsageView extracts and displays the network usage information
-stored in the SRUDB.dat database of Windows 8 and Windows 10. The network
-usage data is collected every hour by Windows operating systems and
-includes the following information: The name and description of the
-service or application, the name and SID of the user, the network
+stored in the SRUDB.dat database of Windows 8, Windows 10, and Windows
+11. The network usage data is collected every hour by Windows operating
+systems and includes the following information: The name and description
+of the service or application, the name and SID of the user, the network
 adapter, and the total number of bytes sent and received by the specified
 service/application.
 
@@ -23,15 +23,51 @@ service/application.
 System Requirements
 ===================
 
-This tools works on Windows 8 and Windows 10. Previous versions of
-Windows are not supported because the operating system doesn't collect
-the network usage information.
+This tools works on Windows 8, Windows 10, and Windows 11. Previous
+versions of Windows are not supported because the operating system
+doesn't collect the network usage information.
 
 
 
 Versions History
 ================
 
+
+* Version 1.32:
+  o Fixed bug: NetworkUsageView crashed when trying to read the
+    network usage database created by Windows 11 24H2.
+
+* Version 1.31:
+  o Added 'Sort By' toolbar button.
+
+* Version 1.30:
+  o Updated to work much faster when there are many network usage
+    items.
+
+* Version 1.27:
+  o Added /Columns command-line option, which allows you to set the
+    columns to display or the columns to export from command-line, for
+    example:
+    NetworkUsageView.exe /Columns "Timestamp,App Name,User Name,Bytes
+    Sent,Bytes Received"
+
+* Version 1.26:
+  o Added option to change the sorting column from the menu (View ->
+    Sort By). Like the column header click sorting, if you click again
+    the same sorting menu item, it'll switch between ascending and
+    descending order. Also, if you hold down the shift key while choosing
+    the sort menu item, you'll get a secondary sorting.
+  o Fixed some display issues in high DPI mode.
+
+* Version 1.25:
+  o Added 'Bytes Counter Unit' option, which allows you to choose the
+    unit to display the 'Bytes Sent' and 'Bytes Received' columns: Bytes,
+    kB, KiB, MB, MiB, GB, GiB, or Automatic.
+  o The bottom status bar now displays the total sent and received
+    bytes of the selected items.
+
+* Version 1.21:
+  o Added 'Align Numeric Columns To Right' option.
 
 * Version 1.20:
   o Added new columns: Network Adapter Guid, Network Adapter Luid,
@@ -161,6 +197,18 @@ Save the network usage information into HTML file (Vertical).
 
 /sxml <Filename>
 Save the network usage information into XML file.
+
+/Columns <Comma Delimited Columns List>
+Allows you to set the columns to display or the columns to export from
+command-line. You have to specify the column names, delimited by comma,
+for example:
+NetworkUsageView.exe /scomma c:\temp\network-usage.csv /Columns
+"Timestamp,App Name,User Name,Bytes Sent,Bytes Received"
+
+You can also specify the column names without space characters, for
+example:
+NetworkUsageView.exe /Columns
+"Timestamp,AppName,UserName,BytesSent,BytesReceived"
 
 
 /LoadFrom [1 - 3]
